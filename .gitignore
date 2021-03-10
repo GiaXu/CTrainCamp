@@ -50,3 +50,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+data/filetest
+data/func_pointer
+data/insert_sort
+data/insert_sort_d
+data/main
+data/pop_sort
+data/stack
+data/SUT
+data/xjq
+

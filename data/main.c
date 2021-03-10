@@ -223,7 +223,7 @@ int test01()
 
 int main(void)
 {
-  /*
+    /*
    int input[MAX_NUMBER];
 
     int output[MAX_NUMBER] = {0};
@@ -410,7 +410,7 @@ testFile();
 
 printf("testFile ends");*/
 
-//Day 1
+    //Day 1
     //1-1
     /*  
 int main()
@@ -493,8 +493,7 @@ int main()
 }
     */
 
-
-//Day 2
+    //Day 2
     //2-1
     /* 
     int main()
@@ -628,7 +627,7 @@ int main()
     printf("result is %f\n",fun17(eps));
 */
     //2-8
-   /* 
+    /* 
   
   int main()
   {
@@ -641,8 +640,7 @@ int main()
   }
     */
 
-
-//Day 3
+    //Day 3
     //3-1
     /*
     void main()
@@ -738,9 +736,8 @@ void main()
 
     puts(c);
 */
-  
 
-//Day 4
+    //Day 4
     //4-1
     /*
 void main()
@@ -915,7 +912,251 @@ void main()
     }
     }
     */
+
+    //Day 5
+    //5-1
+    /*
+    void main()
+    {
+    int a[100];
+    int n = 0;
+    int i = 0;
+    printf("Please input numbers:\n");
+    scanf("%d", &n);
+    printf("Please input arrys:\n");
+    for (i = 0; i < n; ++i)
+    {
+        scanf("%d,", &a[i]);
+    }
+
+    for (i = n - 1; i >= 0; --i)
+    {
+        printf("%d\t", a[i]);
+    }
+    }
+    */
+    //5-2
+    /*
+    void main()
+    {
+    int a[100],x;
+    int n,i;
+    printf("Please input numbers:\n");
+    scanf("%d",&n);
+    printf("Please input a:\n");
+    for(i = 0;i < n;++i)
+    {
+        scanf("%d,",&a[i]);
+    }
+        printf("Please input x:\n");
+        scanf("%d",&x);
+
+        fun5_2(a,x,&n);
+        
+        for(i = 0;i < n - 1;++i)
+        {
+            printf("%2d",a[i]);
+        }
+    
+    }
+    */
+    //5-3
+    /*
+    int main()
+    {
+    int i = 0;
+    int n = 0;
+    int m[100];
+    fun5_3(m,&n);
+    printf("%d\n",n);
+    for(i = 0;i < n;++i)
+    {
+        printf("%d",m[i]);
+    }
+    return 0;
+    }
+    */
+    //5-4
+    /*
+    void main()
+    {
+    int lim,aa[100];
+    scanf("%d",&lim);
+    printf("%d\n",fun5_4(lim,aa));
+    }
+    */
+    //5-5
+    /*
+   void main()
+   {
+    int a[3][3];
+    int i,j,s = 0;
+    for(i = 0;i < 3;++i)
+    {
+        for(j = 0;j < 3;++j)
+        {
+            scanf("%d",&a[i][j]);
+        }
+    }
+    for(i = 0;i < 3;++i)
+    {
+        s += a[i][i];
+    }
+    printf("%d\n",s);
+   }
+   */
+    //5-6
+    /*
+    void main()
+    {
+    int a[3][3],i,j;
+    for(i = 0;i < 9;++i)
+    {
+        scanf("%d",&a[0][0] + i);
+    } 
+    
+    printf("before init is:\n");
+
+    for(i = 0;i < 9;++i)
+    {
+        printf("%2d",a[0][0] + i);
+
+        if(i % 3 == 2)
+        {
+            printf("\n");
+        }
+    }
+
+    printf("NOW is:\n");
+
+    for(i = 0;i < 3;++i)
+    {
+        for(j = 0;j < 3;++j)
+        {
+            printf("%2d",a[j][i]);
+
+            if(j == 2)
+            {
+                printf("\n");
+            }
+        }
+    }
+    }
+    */
+
+    //Day 6
+    //6-1
+    /*
+    void main()
+    {
+    int x = 0;
+
+    int input[MAX_NUMBER];
+
+    int output[MAX_NUMBER] = {0};
+
+    for (size_t i = 0; i < MAX_NUMBER; ++i)
+    {
+        int tmp = random();
+        if (tmp % 2)
+        {
+            tmp = -tmp;
+        }
+        input[i] = tmp / 10000000;
+    }
+
+    initIntArrayWithRadom(input, MAX_NUMBER);
+    for (size_t i = 0; i < MAX_NUMBER; ++i)
+    {
+        printf("%d,", input[i]);
+    }
+
+    printf("\n");
+
+    popSort(input, sizeof(input) / sizeof(int));
+    for (size_t i = 0; i < sizeof(input) / sizeof(int); ++i)
+    {
+        printf("%d,", input[i]);
+    }
+
+    printf("\n");
+
+    printf("Please input x:\n");
+    scanf("%d",&x);
+
+    printf("%d\n",fun6_1(input,0,sizeof(input) / sizeof(int),x));
+    }
+    */
+    //6-2
+    /*
+    void main()
+    {
+    int n = 0;
+    printf("Please input n:\n");
+    scanf("%d",&n);
+    fun6_2(n);
+    }
+    */
+    //6-3
+    /*
+    void main()
+    {
+
+    int x = 0;
+    printf("Please input x:\n");
+    scanf("%d",&x);
+    fun6_3(x);
+    }
+    */
+    //6-4
+    /*
+    void main()
+    {
+        stu s[N] = {{101, 97}, {102, 96}, {103, 98}, {104, 93}, {105, 93}, {106, 97}, {107, 93}, {108, 99}, {109, 95}, {110, 95}};
+        stu h[N];
+        int num, i;
+        num = fun6_4(s, h);
+
+        printf("Having %d min score\n", num);
+
+        for (i = 0; i < num; ++i)
+        {
+            printf("No.%d\tscore :%d\n", h[i].num, h[i].score);
+        }
+    }
+    */
+    //6-5
+    /*
+    void main()
+    {
+    int m;
+    struct node
+    {
+        int code;
+        struct node *next;
+    };
+    struct node *head, *p1, *p2;
+    head = p1 = (struct node *)malloc(sizeof(struct node));
+    scanf("%d", &m);
+    p1->next = 0;
+
+    while (m != 0)
+    {
+        p1->code = m;
+        p2 = (struct node *)malloc(sizeof(struct node));
+        p1->next = p2;
+        p1 = p2;
+        p1->next = 0;
+        scanf("%d", &m);
+    }
+    p1 = head;
+    while (p1->next != 0)
+    {
+        printf("%d,", p1->code);
+        p1 = p1->next;
+    }
+    }
+    */
+
     return 0;
 }
-
-

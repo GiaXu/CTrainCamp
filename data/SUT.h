@@ -3,6 +3,19 @@
 #include "insert_sort.h"
 #include <math.h>
 
+#define N 10
+
+ 
+ typedef struct stu
+    {
+        int num;
+        int score;
+    }stu;
+
+
+
+
+
 double fun01(double x,double y);
 
 int fun02(int num);
@@ -50,5 +63,19 @@ int fun4_4(char* a,char* b);
 int search4_5(int *input,size_t start, size_t count,int x);
 
 int *fun4_6(char *st, int a[3]);
+
+void fun5_2(int aa[],int x,int* n);
+
+void fun5_3(int* a,int* b);
+
+int fun5_4(int lim,int aa[100]);
+
+int fun6_1(int *input,size_t start, size_t count,int x);
+
+void fun6_2(int n);
+
+void fun6_3(int x);
+
+int fun6_4(struct stu* s,struct stu* h);
 
 #endif //__SUT_H__  

@@ -102,6 +102,7 @@ float fun05(float num)
     return pi;
 }
 
+
 //Day 2
 float fun11(float x, int m)
 {
@@ -260,6 +261,7 @@ int fun18(int m)
     }
     return k;
 }
+
 
 //Day 3
 int len21(char *s)
@@ -420,6 +422,7 @@ void fun27(char *a, char *b, char *c)
     }
 }
 
+
 //Day 4
 void fun4_3(char *a)
 {
@@ -509,4 +512,136 @@ int *fun4_6(char *st, int a[3])
         ++st;
     }
     return a;
+}
+
+
+
+//Day 5
+void fun5_2(int aa[],int x,int* n)
+{
+    int i,j;
+    for(i = 0;i < *n;++i)
+    {
+        if(aa[i] == x)
+        {
+           while (i < *n)
+           {
+               j = i + 1;
+               aa[i] = aa[j];
+               ++i;
+           }
+           
+        }
+    }
+}
+
+void fun5_3(int* a,int* b)
+{
+    int i = 1;
+    for(i = 1;i <= 100;++i)
+    {
+        if(i % 7 == 0 || i % 11 == 0)
+        {
+            *a = i;
+            ++a;
+            ++(*b);
+        }
+    }
+}
+
+int fun5_4(int lim,int aa[100])
+{
+    int i,MAX = 0,j;
+    for(i = 0;i <= lim;++i)
+    {
+        for(j = 2;j < i;++j)
+        {
+            if(i % j == 0)
+            {
+                break;
+            }
+            if(i == j + 1)
+            {
+                aa[MAX] = i;
+                MAX ++;
+            }
+        }
+    }
+    return MAX;
+}
+
+
+
+//Day 6
+
+int fun6_1(int *input,size_t start, size_t count,int x)
+{
+    if (NULL == input || count <= 0)
+    {
+        return 0;
+    }
+
+    size_t mid = ((start + count) + start) / 2;
+
+    if(input[mid] == x)
+    {
+        return 1;
+    }
+    else if(input[mid] > x)
+    {
+        return fun6_1(input,start,(mid - start ),x);
+    }
+    else
+    { 
+        return fun6_1(input,mid + 1,(start + count - mid - 1),x);
+    }
+
+}
+
+void fun6_2(int n)
+{
+    if(0 == n / 10)
+    {
+        putchar('0' + n % 10);
+    }
+    else 
+    {
+        fun6_2(n / 10);
+        putchar('0' + n % 10);
+    }
+    
+}
+
+void fun6_3(int x)
+{
+    int i,a[2];
+    a[0] = x * x;
+    a[1] = x * x * x;
+    for(i = 0;i < 2;++i)
+    {
+        printf("%d\n",a[i]);
+    }
+}
+
+int fun6_4(struct stu* s,struct stu* h)
+{
+    stu min;
+    min = s[0];
+    int i,c = 0;
+    for(i = 0;i < N;++i)
+    {
+        if(min.score > s[i].score)
+        {
+            min = s[i];
+        }
+    }
+    for(i = 0;i < N;++i)
+    {
+        if(s[i].score == min.score)
+        {
+            *(h + c) = s[i];
+            ++c;
+        }
+    }
+    return c;
 }
