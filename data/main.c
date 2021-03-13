@@ -1,11 +1,15 @@
 #include <string.h>
+/*
 #include "insert_sort.h"
 #include "insert_sort_d.h"
+*/
 #include <stdlib.h>
+/*
 #include "pop_sort.h"
 #include "func_pointer.h"
 #include "stack.h"
 #include "filetest.h"
+*/
 #include <math.h>
 #include <stdio.h>
 #include "SUT.h"
