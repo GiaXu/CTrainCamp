@@ -8,7 +8,12 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-framework",
+                "GLUT",
+                "-framework",
+                "OpenGL",
+                "-Wno-deprecated"
             ],
             "options": {
                 "cwd": "${fileDirname}"
