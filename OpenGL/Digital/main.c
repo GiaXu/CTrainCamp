@@ -174,17 +174,7 @@ void onAscIIKey(unsigned char ch,int mouseX,int mouseY)
         number = 0;
     }
     number = (number * 10) + (ch - '0');
-    /*
-   if(number >= 10)
-   {
-       number = 0;
-   }
-   if(number >= 0 || number < 10)
-   {
-       number = number * 10;
-   }
-    number += (ch - '0');
-    */
+    
     setDigital(number);
 
     glutPostRedisplay();
