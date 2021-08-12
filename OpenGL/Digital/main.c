@@ -13,7 +13,7 @@ enum EmStrokes
 
 };
 
-static unsigned int s_mask = 0xffff;
+static unsigned int s_mask = 0xffffff;
 static int number = 0;
 
 void initWindow();
@@ -22,13 +22,17 @@ void reshape(int width, int height);
 void onAscIIKey(unsigned char ch, int mouseX, int mouseY);
 void showStrokes_Right(unsigned char mask);
 void showStrokes_Left(unsigned char mask);
+void showStrokes_Center(unsigned char mask);
 unsigned char getRightMask();
 unsigned char getLeftMask();
+unsigned char getCenterMask();
 void setRightMask(unsigned char mask);
 void setLeftMask(unsigned char mask);
+void setCenterMask(unsigned char mask); 
 void drawDigital();
 void drawLeftDigital();
 void drawRightDigital();
+void drawCenterDigital();
 void setDigital(int num);
 
 int main(int argc,char* argv[])
@@ -41,7 +45,7 @@ int main(int argc,char* argv[])
     glutReshapeFunc(reshape);
     glutKeyboardFunc(onAscIIKey);
 
-    setDigital(56);
+    setDigital(857);
 
     glutMainLoop();
 
@@ -110,20 +114,24 @@ unsigned char calcMask(int num)
 
 void setDigital(int num)
 {
-    if (num < 0 || num > 99)
+    if (num < 0 || num > 999)
     {
         // error
     }
     int numLow = num % 10;
-    int numHigh = num / 10;
+    int numMiddle = (num - numLow) / 10 % 10;
+    int numHigh = (num - numLow) / 100;
     setLeftMask(calcMask(numHigh));
     setRightMask(calcMask(numLow));
+    setCenterMask(calcMask(numMiddle));
+
 }
 
 void drawDigital()
 {
     drawLeftDigital();
     drawRightDigital();
+    drawCenterDigital();
 }
 
 void reshape(int width,int height)
@@ -144,6 +152,11 @@ unsigned char getLeftMask()
     return (unsigned char)(s_mask >> 8);
 }
 
+unsigned char getCenterMask()
+{
+    return (unsigned char)(s_mask >> 16);
+}
+
 void setRightMask(unsigned char mask)
 {
     s_mask &= 0xff00;
@@ -157,6 +170,13 @@ void setLeftMask(unsigned char mask)
     s_mask |= (leftMask << 8);
 }
 
+void setCenterMask(unsigned char mask)   
+{
+    unsigned int centerMask = mask;
+    s_mask &= 0xffff;
+    s_mask |= (centerMask << 16);
+}
+
 void drawLeftDigital()
 {
     showStrokes_Left(getLeftMask());
@@ -167,9 +187,15 @@ void drawRightDigital()
     showStrokes_Right(getRightMask());
 }
 
+
+void drawCenterDigital()
+{
+    showStrokes_Center(getCenterMask());
+}
+
 void onAscIIKey(unsigned char ch,int mouseX,int mouseY)
 {
-    if(number > 9)
+    if(number > 99)
     {
         number = 0;
     }
@@ -188,72 +214,72 @@ void showStrokes_Right(unsigned char mask)
     if (mask & TOP)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.375f,0.625f,0.f);
-        glVertex3f(0.475f,0.775f,0.f);
-        glVertex3f(0.075f,0.775f,0.f);
-        glVertex3f(0.175f,0.625f,0.f);
+        glVertex3f(0.65f,0.625f,0.f);
+        glVertex3f(0.75f,0.775f,0.f);
+        glVertex3f(0.35f,0.775f,0.f);
+        glVertex3f(0.45f,0.625f,0.f);
         glEnd();
     }
 
     if (mask & TOP_LEFT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.175f,0.575f,0.f);
-        glVertex3f(0.075f,0.725f,0.f);
-        glVertex3f(0.075f,0.05f,0.f);
-        glVertex3f(0.175f,0.125f,0.f);
+        glVertex3f(0.45f,0.575f,0.f);
+        glVertex3f(0.35f,0.725f,0.f);
+        glVertex3f(0.35f,0.05f,0.f);
+        glVertex3f(0.45f,0.125f,0.f);
         glEnd();
     }
 
     if (mask & TOP_RIGHT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.475f,0.725f,0.f);
-        glVertex3f(0.375f,0.575f,0.f);
-        glVertex3f(0.375f,0.125f,0.f);
-        glVertex3f(0.475f,0.05f,0.f);
+        glVertex3f(0.75f,0.725f,0.f);
+        glVertex3f(0.65f,0.575f,0.f);
+        glVertex3f(0.65f,0.125f,0.f);
+        glVertex3f(0.75f,0.05f,0.f);
         glEnd();
     }
 
     if (mask & CENTER)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.475f,0.f,0.f);
-        glVertex3f(0.375f,0.075f,0.f);
-        glVertex3f(0.175f,0.075f,0.f);
-        glVertex3f(0.075f,0.f,0.f);
-        glVertex3f(0.175f,-0.075f,0.f);
-        glVertex3f(0.375f,-0.075f,0.f);
+        glVertex3f(0.75f,0.f,0.f);
+        glVertex3f(0.65f,0.075f,0.f);
+        glVertex3f(0.45f,0.075f,0.f);
+        glVertex3f(0.35f,0.f,0.f);
+        glVertex3f(0.45f,-0.075f,0.f);
+        glVertex3f(0.65f,-0.075f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM_LEFT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.175f,-0.125f,0.f);
-        glVertex3f(0.075f,-0.05f,0.f);
-        glVertex3f(0.075f,-0.725f,0.f);
-        glVertex3f(0.175f,-0.575f,0.f);
+        glVertex3f(0.45f,-0.125f,0.f);
+        glVertex3f(0.35f,-0.05f,0.f);
+        glVertex3f(0.35f,-0.725f,0.f);
+        glVertex3f(0.45f,-0.575f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM_RIGHT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.475f,-0.05f,0.f);
-        glVertex3f(0.375f,-0.125f,0.f);
-        glVertex3f(0.375f,-0.575f,0.f);
-        glVertex3f(0.475f,-0.725f,0.f);
+        glVertex3f(0.75f,-0.05f,0.f);
+        glVertex3f(0.65f,-0.125f,0.f);
+        glVertex3f(0.65f,-0.575f,0.f);
+        glVertex3f(0.75f,-0.725f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(0.475f,-0.775f,0.f);
-        glVertex3f(0.375f,-0.625f,0.f);
-        glVertex3f(0.175f,-0.625f,0.f);
-        glVertex3f(0.075f,-0.775f,0.f);
+        glVertex3f(0.75f,-0.775f,0.f);
+        glVertex3f(0.65f,-0.625f,0.f);
+        glVertex3f(0.45f,-0.625f,0.f);
+        glVertex3f(0.35f,-0.775f,0.f);
         glEnd();
     }
 }
@@ -266,73 +292,152 @@ void showStrokes_Left(unsigned char mask)
     if (mask & TOP)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.175f,0.625f,0.f);
-        glVertex3f(-0.075f,0.775f,0.f);
-        glVertex3f(-0.475f,0.775f,0.f);
-        glVertex3f(-0.375f,0.625f,0.f);
+        glVertex3f(-0.45f,0.625f,0.f);
+        glVertex3f(-0.35f,0.775f,0.f);
+        glVertex3f(-0.75f,0.775f,0.f);
+        glVertex3f(-0.65f,0.625f,0.f);
         glEnd();
     }
 
     if (mask & TOP_LEFT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.375f,0.575f,0.f);
-        glVertex3f(-0.475f,0.725f,0.f);
-        glVertex3f(-0.475f,0.05f,0.f);
-        glVertex3f(-0.375f,0.125f,0.f);
+        glVertex3f(-0.65f,0.575f,0.f);
+        glVertex3f(-0.75f,0.725f,0.f);
+        glVertex3f(-0.75f,0.05f,0.f);
+        glVertex3f(-0.65f,0.125f,0.f);
         glEnd();
     }
 
     if (mask & TOP_RIGHT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.075f,0.725f,0.f);
-        glVertex3f(-0.175f,0.575f,0.f);
-        glVertex3f(-0.175f,0.125f,0.f);
-        glVertex3f(-0.075f,0.05f,0.f);
+        glVertex3f(-0.35f,0.725f,0.f);
+        glVertex3f(-0.45f,0.575f,0.f);
+        glVertex3f(-0.45f,0.125f,0.f);
+        glVertex3f(-0.35f,0.05f,0.f);
         glEnd();
     }
 
     if (mask & CENTER)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.475f,0.f,0.f);
-        glVertex3f(-0.375f,-0.075f,0.f);
-        glVertex3f(-0.175f,-0.075f,0.f);
-        glVertex3f(-0.075f,0.f,0.f);
-        glVertex3f(-0.175f,0.075f,0.f);
-        glVertex3f(-0.375f,0.075f,0.f);
+        glVertex3f(-0.35f,0.f,0.f);
+        glVertex3f(-0.45f,0.075f,0.f);
+        glVertex3f(-0.65f,0.075f,0.f);
+        glVertex3f(-0.75f,0.f,0.f);
+        glVertex3f(-0.65f,-0.075f,0.f);
+        glVertex3f(-0.45f,-0.075f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM_LEFT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.375f,-0.125f,0.f);
-        glVertex3f(-0.475f,-0.05f,0.f);
-        glVertex3f(-0.475f,-0.725f,0.f);
-        glVertex3f(-0.375f,-0.575f,0.f);
+        glVertex3f(-0.65f,-0.125f,0.f);
+        glVertex3f(-0.75f,-0.05f,0.f);
+        glVertex3f(-0.75f,-0.725f,0.f);
+        glVertex3f(-0.65f,-0.575f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM_RIGHT)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.075f,-0.05f,0.f);
-        glVertex3f(-0.175f,-0.125f,0.f);
-        glVertex3f(-0.175f,-0.575f,0.f);
-        glVertex3f(-0.075f,-0.725f,0.f);
+        glVertex3f(-0.35f,-0.05f,0.f);
+        glVertex3f(-0.45f,-0.125f,0.f);
+        glVertex3f(-0.45f,-0.575f,0.f);
+        glVertex3f(-0.35f,-0.725f,0.f);
         glEnd();
     }
 
     if(mask & BOTTOM)
     {
         glBegin(GL_POLYGON);
-        glVertex3f(-0.075f,-0.775f,0.f);
-        glVertex3f(-0.175f,-0.625f,0.f);
-        glVertex3f(-0.375f,-0.625f,0.f);
-        glVertex3f(-0.475f,-0.775f,0.f);
+        glVertex3f(-0.35f,-0.775f,0.f);
+        glVertex3f(-0.45f,-0.625f,0.f);
+        glVertex3f(-0.65f,-0.625f,0.f);
+        glVertex3f(-0.75f,-0.775f,0.f);
         glEnd();
     }
 }
+
+void showStrokes_Center(unsigned char mask)
+{
+    glColor3f(1.f,0.8f,0.2f);
+
+    if (mask & TOP)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(0.1f,0.625f,0.f);
+        glVertex3f(0.2f,0.775f,0.f);
+        glVertex3f(-0.2f,0.775f,0.f);
+        glVertex3f(-0.1f,0.625f,0.f);
+        glEnd();
+    }
+
+    if (mask & TOP_LEFT)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(-0.1f,0.575f,0.f);
+        glVertex3f(-0.2f,0.725f,0.f);
+        glVertex3f(-0.2f,0.05f,0.f);
+        glVertex3f(-0.1f,0.125f,0.f);
+        glEnd();
+    }
+
+    if (mask & TOP_RIGHT)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(0.2f,0.725f,0.f);
+        glVertex3f(0.1f,0.575f,0.f);
+        glVertex3f(0.1f,0.125f,0.f);
+        glVertex3f(0.2f,0.05f,0.f);
+        glEnd();
+    }
+
+    if (mask & CENTER)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(0.2f,0.f,0.f);
+        glVertex3f(0.1f,0.075f,0.f);
+        glVertex3f(-0.1f,0.075f,0.f);
+        glVertex3f(-0.2f,0.f,0.f);
+        glVertex3f(-0.1f,-0.075f,0.f);
+        glVertex3f(0.1f,-0.075f,0.f);
+        glEnd();
+    }
+
+    if(mask & BOTTOM_LEFT)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(-0.1f,-0.125f,0.f);
+        glVertex3f(-0.2f,-0.05f,0.f);
+        glVertex3f(-0.2f,-0.725f,0.f);
+        glVertex3f(-0.1f,-0.625f,0.f);
+        glEnd();
+    }
+
+    if(mask & BOTTOM_RIGHT)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(0.2f,-0.05f,0.f);
+        glVertex3f(0.1f,-0.125f,0.f);
+        glVertex3f(0.1f,-0.575f,0.f);
+        glVertex3f(0.2f,-0.725f,0.f);
+        glEnd();
+    }
+
+    if(mask & BOTTOM)
+    {
+        glBegin(GL_POLYGON);
+        glVertex3f(0.2f,-0.775f,0.f);
+        glVertex3f(0.1f,-0.625f,0.f);
+        glVertex3f(-0.1f,-0.625f,0.f);
+        glVertex3f(-0.2f,-0.775f,0.f);
+        glEnd();
+    }
+}
+
+
 
