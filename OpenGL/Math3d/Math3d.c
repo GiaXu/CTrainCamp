@@ -1,6 +1,15 @@
 #include "Math3d.h"
 #include <stdio.h>
 
+void mul_num_X_mat(float* result,const float* matA,float num);
+float CalculateThirdDet(const float* mat3x3);
+float CalculateFourthDet(const float* mat4x4);
+float CalculateAlgebraicRemainder(const float* mat4x4,int i,int j);
+int getCoordinates(const float* mat4x4,int row,int col);
+void Transpose_mat4x4(float* result, const float* matA);
+void Adjoint_mat4x4(float* result,const float* matA);
+
+
 void mul_mat4x4(float* result, const float* matA, const float* matB)
 {
     /*
@@ -131,7 +140,12 @@ void printMat4x4(const float* mat4x4)
     printf("\n");
 }
 
-
+/**
+ * @brief Calculate a Third Det
+ * 
+ * @param mat3x3 
+ * @return float 
+ */
 float CalculateThirdDet(const float* mat3x3) 
 {
     float sum_T = 0;
@@ -151,7 +165,12 @@ float CalculateThirdDet(const float* mat3x3)
     return sum;
 }
 
-
+/**
+ * @brief Calculate a Fourth Det
+ * 
+ * @param mat4x4 
+ * @return float 
+ */
 float CalculateFourthDet(const float* mat4x4)
 {
     float sum = 0;
@@ -166,7 +185,14 @@ float CalculateFourthDet(const float* mat4x4)
     return sum;
 }
 
-
+/**
+ * @brief Calculate the algebraic remainder
+ * 
+ * @param mat4x4 
+ * @param i row coordinates
+ * @param j column coordinated
+ * @return float the result
+ */
 float CalculateAlgebraicRemainder(const float* mat4x4,int i,int j)
 {
     float mat3x3[9] = {0};
@@ -221,16 +247,25 @@ float CalculateAlgebraicRemainder(const float* mat4x4,int i,int j)
     return sum;
 }
 
-
+/**
+ * @brief Enter the row and column coordinates and return the array subscript
+ * 
+ * @param mat4x4 
+ * @param row row coordinates
+ * @param col column coordinates
+ * @return int array subscript
+ */
 int getCoordinates(const float* mat4x4,int row,int col)
 {
-    int k = 0;
-    k = col * 4 + row;
-    
-    return k;
+    return col * 4 + row;
 }
 
-
+/**
+ * @brief Transpose a matrix
+ * 
+ * @param result Empty matrix，The transposed matrix will be stored here
+ * @param matA Matrix to be transposed
+ */
 void Transpose_mat4x4(float* result, const float* matA)
 {
    int i = 0;
@@ -244,7 +279,12 @@ void Transpose_mat4x4(float* result, const float* matA)
    }
 }
 
-
+/**
+ * @brief Calculate the adjoint matrix
+ * 
+ * @param result Empty matrix，The companion matrix will be stored here
+ * @param matA Calculate the matrix of the adjoint matrix
+ */
 void Adjoint_mat4x4(float* result,const float* matA)
 {
     int i = 0;
