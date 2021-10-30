@@ -9,6 +9,8 @@
 				"-g",
 				"main.c",
 				"Math3d.c",
+				"-arch",
+                "x86_64",
 				"-o",
 				"${fileDirname}/build/main"
 			],

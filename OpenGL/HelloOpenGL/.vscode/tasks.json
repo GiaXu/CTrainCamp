@@ -3,10 +3,12 @@
         {
             "type": "cppbuild",
             "label": "C/C++: clang build active file",
-            "command": "/usr/bin/clang",
+            "command": "/usr/bin/clang++",
             "args": [
                 "-g",
                 "${file}",
+                "-arch",
+                "x86_64",
                 "-o",
                 "${fileDirname}/build/${fileBasenameNoExtension}",
                 "-framework",

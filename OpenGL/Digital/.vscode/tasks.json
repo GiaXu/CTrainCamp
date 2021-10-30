@@ -7,6 +7,8 @@
             "args": [
                 "-g",
                 "${file}",
+                "-arch",
+                "x86_64",
                 "-o",
                 "${fileDirname}/build/${fileBasenameNoExtension}",
                 "-framework",
