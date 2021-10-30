@@ -35,6 +35,21 @@ void drawRightDigital();
 void drawCenterDigital();
 void setDigital(int num);
 
+   float matScale4x4centerUP[] = { 0.5f, 0.f, 0.f, 0.f,
+                            0.f, 0.5f, 0.f, 0.f,
+                            0.f, 0.f, 1.f, 0.f,
+                            0.f, 0.5f, 0.f, 1.f };
+
+    float matScale4x4Left[] = { 0.5f, 0.f, 0.f, 0.f,
+                            0.f, 0.5f, 0.f, 0.f,
+                            0.f, 0.f, 1.f, 0.f,
+                            -0.5f, 0.f, 0.f, 1.f };
+
+    float matScale4x4Right[] = { 0.5f, 0.f, 0.f, 0.f,
+                            0.f, 0.5f, 0.f, 0.f,
+                            0.f, 0.f, 1.f, 0.f,
+                            0.5f, 0.f, 0.f, 1.f };
+
 int main(int argc,char* argv[])
 {
     glutInit(&argc,argv);
@@ -65,6 +80,9 @@ void display()
     glClearColor(0.4f,0.6f,0.8f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
+
+
+    glLoadMatrixf(matScale4x4centerUP);
 
     drawDigital();
    
@@ -129,9 +147,13 @@ void setDigital(int num)
 
 void drawDigital()
 {
+    glLoadMatrixf(matScale4x4Left);
     drawLeftDigital();
+    glLoadMatrixf(matScale4x4Right);
     drawRightDigital();
+    glLoadMatrixf(matScale4x4centerUP);
     drawCenterDigital();
+    
 }
 
 void reshape(int width,int height)
