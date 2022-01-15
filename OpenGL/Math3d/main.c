@@ -18,10 +18,10 @@ int main()
                       -5.f, 2.f, 1.f,0.f,
                       7.f, 3.f, 2.f, 1.f};
 
-    float matC[16] = {1.f,0.f,0.f,0.f,
-                      0.f,1.f,0.f,0.f,
-                      0.f,0.f,1.f,0.f,
-                      0.f,0.f,0.f,1.f};
+    float matC[16] = {1.f,-1.f,0.f,0.f,
+                      -2.f,1.f,-1.f,1.f,
+                      3.f,-2.f,2.f,-1.f,
+                      0.f,0.f,3.f,4.f};
 
     float matD[16] = {0};
     float matE[16] = {0};
@@ -31,19 +31,19 @@ int main()
                      2.f,0.f,-5.f};
 
 
-    mul_mat4x4(matD, matA, matC);//乘法测试ok
+    //mul_mat4x4(matD, matA, matC);//乘法测试ok
     //printf("matB is :\n");
     //printMat4x4(matB);
 
-    printf("matD is :\n");
-    printMat4x4(matD);
+    //printf("matC is :\n");
+    //printMat4x4(matC);
 
     //printf("matA[%d]\n",getCoordinates(matA,0,3));//角标测试ok
 
     //Transpose_mat4x4(matD, matA);//转置测试ok
 
-    //float g = CalculateAlgebraicRemainder(matB,2,1);代数余子式测试ok
-    //printf("g is %f\n",g);
+    float g = float CalculateAlgebraicRemainder(matC,1,1); //代数余子式测试ok
+    printf("g is %f\n",g);
 
     //float Fourth = CalculateFourthDet(matB);//四阶行列式测试ok
     //printf("Fourth is :%f\n",Fourth);

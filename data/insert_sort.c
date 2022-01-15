@@ -86,7 +86,7 @@ BOOL move(int *Buffer, size_t start, size_t count, int step)
     return TRUE;
 }
 
-BOOL reverse(int *Buffer, size_t count)
+BOOL reverse(int *Buffer, size_t count)  //逆序
 {
     if (NULL == Buffer || 0 == count)
     {
