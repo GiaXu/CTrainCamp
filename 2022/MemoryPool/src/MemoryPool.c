@@ -82,13 +82,17 @@ static MemoryRecord_t* _split (MemoryPool_t* mp,MemoryRecord_t* f0,uint32 size)
  * @param a_f 
  * @return MemoryRecord_t* a_f if successful, NULL if failure
  */
-static MemoryRecord_t* _insert (MemoryPool_t* mp, MemoryRecord_t* mr, MemoryRecord_t* a_f)
+static MemoryRecord_t* _insert (MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* a_f)
 {
     assert( NULL != mp);
-    assert( NULL != mr);
     assert( NULL != a_f);
 
-    MemoryRecord_t* _aLast = mr;
+    if (NULL == root)
+    {
+        return a_f;
+    }
+
+    MemoryRecord_t* _aLast = root;
 
     while(0 != _aLast->next)
     {
@@ -96,7 +100,7 @@ static MemoryRecord_t* _insert (MemoryPool_t* mp, MemoryRecord_t* mr, MemoryReco
     }
     _aLast->next = _getMRoffset(mp, a_f);
 
-    return a_f;
+    return root;
 }
 
 /**
@@ -146,13 +150,11 @@ void initMemoryPool (MemoryPool_t *mp,uint32 size)
     mp->base = malloc(size);
     mp->size = size;
 
-    mp->allocated = (MemoryRecord_t*)mp->base; 
-    mp->allocated->size = 0;
-    mp->allocated->next = 0;
+    mp->allocated = NULL;
 
-    mp->freed = (MemoryRecord_t*)(mp->base + sizeof(MemoryRecord_t)); 
+    mp->freed = (MemoryRecord_t*)(mp->base); 
     mp->freed->next = 0;
-    mp->freed->size = size - 2 * sizeof(MemoryRecord_t);
+    mp->freed->size = size -  sizeof(MemoryRecord_t);
 
     return;
 }
@@ -203,7 +205,7 @@ void* _alloc (MemoryPool_t* mp, uint32 size)
         _split(mp, f0 ,size);
     }
     mp->freed = _remove(mp, mp->freed, f0);
-    _insert(mp, mp->allocated, f0);
+    mp->allocated = _insert(mp, mp->allocated, f0);
 
     return _getMemoryPtr(f0);
 }
