@@ -9,7 +9,7 @@
  * @param mr 
  * @return uint32 
  */
-static uint32 _getMRoffset (MemoryPool_t* mp, MemoryRecord_t* mr)
+static uint32 _getMRoffset (const MemoryPool_t* mp, const MemoryRecord_t* mr)
 {
     assert( NULL != mp );
     assert( NULL != mr );
@@ -21,20 +21,20 @@ static uint32 _getMRoffset (MemoryPool_t* mp, MemoryRecord_t* mr)
  * @brief Find Next one of f0
  * 
  * @param mp 
- * @param f0 
+ * @param mr
  * @return MemoryRecord_t* 
  */
-static MemoryRecord_t* _getNext (MemoryPool_t* mp, MemoryRecord_t* f0)
+static MemoryRecord_t* _getNext (const MemoryPool_t* mp, const MemoryRecord_t* mr)
 {
     assert( NULL != mp );
-    assert( NULL != f0 );
-    if (0 == f0->next)
+    assert( NULL != mr );
+    if (0 == mr->next)
     {
         return NULL;
     }
-    MemoryRecord_t* Next = (MemoryRecord_t*)(mp->base + f0->next);
+    MemoryRecord_t* aNext = (MemoryRecord_t*)(mp->base + mr->next);
 
-    return Next;
+    return aNext;
 }
 
 /**
@@ -42,66 +42,64 @@ static MemoryRecord_t* _getNext (MemoryPool_t* mp, MemoryRecord_t* f0)
  * 
  * @param mp 
  * @param root 
- * @param f0 
+ * @param mr
  * @return MemoryRecord_t* 
  */
-static MemoryRecord_t* _getPrev (MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* f0)
+static MemoryRecord_t* _getPrev (const MemoryPool_t* mp, 
+                                 const MemoryRecord_t* root, 
+                                 const MemoryRecord_t* mr)
 {
     assert( NULL != mp);
-    assert( NULL != f0);
+    assert( NULL != mr);
     assert( NULL != root);
 
-    MemoryRecord_t* fPrev = root;
-    const uint32 offset = _getMRoffset(mp, f0);
-    while(fPrev->next != offset)
+    const MemoryRecord_t* aPrev = root;
+    const uint32 offset = _getMRoffset(mp, mr);
+    while(NULL != aPrev && aPrev->next != offset)
     {
-        fPrev = _getNext(mp,fPrev);
-        if (NULL == fPrev)
-        {
-            return NULL;
-        }
+        aPrev = _getNext(mp,aPrev);
     }//while
-    return fPrev;
 
+    return (MemoryRecord_t*)aPrev;
 }
 
 /**
  * @brief Return the memory of f0
  * 
- * @param f0 
+ * @param mr 
  * @return void* 
  */
-static void* _getMemoryPtr(MemoryRecord_t* f0)
+static void* _getMemoryPtr(const MemoryRecord_t* mr)
 {
-    assert( NULL != f0);
-    assert( f0->size > 0);
+    assert( NULL != mr);
+    assert( mr->size > 0);
 
-    return (u8*)f0 + sizeof(MemoryRecord_t);
+    return (u8*)mr + sizeof(MemoryRecord_t);
 }
 
 /**
  * @brief Split the f0 into two memory recorders. The first one's size is 'size'
  * 
  * @param mp 
- * @param f0 
+ * @param mr 
  * @param size 
  * @return MemoryRecord_t* New memory recorder 
  */
-static MemoryRecord_t* _split (MemoryPool_t* mp,MemoryRecord_t* f0,uint32 size)
+static MemoryRecord_t* _split (MemoryPool_t* mp,MemoryRecord_t* mr,uint32 size)
 {
     assert( NULL != mp );
-    assert( NULL != f0 );
+    assert( NULL != mr );
     assert( 0 != size);
-    assert( f0->size > size + sizeof(MemoryRecord_t));
+    assert( mr->size > size + sizeof(MemoryRecord_t));
 
-    MemoryRecord_t* f1 = (MemoryRecord_t*)((u8*)f0 + sizeof(MemoryRecord_t) + size);
+    MemoryRecord_t* amr = (MemoryRecord_t*)((u8*)mr + sizeof(MemoryRecord_t) + size);
 
-    f1->next = f0->next;
-    f0->next = _getMRoffset(mp, f1);
-    f1->size = f0->size - size - sizeof(MemoryRecord_t);
-    f0->size = size;
+    amr->next = mr->next;
+    mr->next = _getMRoffset(mp, amr);
+    amr->size = mr->size - size - sizeof(MemoryRecord_t);
+    mr->size = size;
 
-    return f1;
+    return amr;
 }
 
 /**
@@ -109,71 +107,62 @@ static MemoryRecord_t* _split (MemoryPool_t* mp,MemoryRecord_t* f0,uint32 size)
  * 
  * @param mp 
  * @param root 
- * @param f0 
+ * @param mr
  * @return MemoryRecord_t* root if successful, NULL if failed.
  */
-static MemoryRecord_t* _remove(MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* f0)
+static MemoryRecord_t* _remove(MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* mr)
 {
     assert( NULL != mp);
     assert( NULL != root);
-    assert( NULL != f0);
+    assert( NULL != mr);
 
-    if(root == f0)
+    if(root == mr)
     {
         MemoryRecord_t* newRoot = _getNext(mp, root);
-        f0->next = 0;
+        mr->next = 0;
         return newRoot;
     }
 
-    MemoryRecord_t* fPrev = root;
-    const uint32 offset = _getMRoffset(mp, f0);
-    while(fPrev->next != offset)
-    {
-        fPrev = _getNext(mp,fPrev);
-        if (NULL == fPrev)
-        {
-            return NULL;
-        }
-    }//while
-
-    fPrev->next = f0->next;
-    f0->next = 0;
+    MemoryRecord_t* aPrev = _getPrev(mp, root, mr);
+    aPrev->next = mr->next;
+    mr->next = 0;
 
     return root;
 }
 
 /**
  * @brief Determine where p is to be inserted in root
- * 
+ *  // FIXME: Determine where p can be inserted in root.
  * @param mp 
  * @param root 
  * @param p 
  * @return MemoryRecord_t* f0 is p's prev memory at the location to be inserted
  */
-static MemoryRecord_t* _findPrevMR (MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* p)
+static MemoryRecord_t* _findPrevMR (const MemoryPool_t* mp, const MemoryRecord_t* root, const MemoryRecord_t* p)
 {
     assert( NULL != mp);
     assert( NULL != root);
     assert( NULL != p);
 
-    MemoryRecord_t* f0 = root;
-    MemoryRecord_t* f1 = root;
-    uint32 p0 = _getMRoffset(mp, p);
-    if (p0 <= _getMRoffset(mp, f1))
+    uint32 ap0 = _getMRoffset(mp, p);
+    if (ap0 <= _getMRoffset(mp, root))
     {
         return NULL;
     }
-    while (p0 > _getMRoffset(mp, f1))
+    const MemoryRecord_t* aMr = root;
+    const MemoryRecord_t* aMrLast = aMr;
+    while (ap0 > _getMRoffset(mp, aMrLast))
     {
-        f0 = f1;
-        f1 = _getNext(mp, f1);
-        if (NULL == f1)
+        aMr = aMrLast;
+        aMrLast = _getNext(mp, aMrLast);
+        if (NULL == aMrLast)
         {
-            return f0;
+            // p0 will append to the list.
+            return (MemoryRecord_t*)aMr;
         }
     }//while
     
-    return f0;
+    return (MemoryRecord_t*)aMr;
 }
 
 /**
@@ -181,33 +170,31 @@ static MemoryRecord_t* _findPrevMR (MemoryPool_t* mp, MemoryRecord_t* root, Memo
  * 
  * @param mp 
  * @param root 
- * @param a_f 
+ * @param mr
  * @return MemoryRecord_t* root is succeed,NULL is failed
  */
-static MemoryRecord_t* _InsertMR (MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* a_f)
+static MemoryRecord_t* _insert (MemoryPool_t* mp, MemoryRecord_t* root, MemoryRecord_t* mr)
 {
     assert( NULL != mp);
-    assert( NULL != a_f);
+    assert( NULL != mr);
 
     if (NULL == root)
     {
-        root = a_f;
+        root = mr;
         return root;
     }
-    MemoryRecord_t* f0 = _findPrevMR(mp, root, a_f);
+    MemoryRecord_t* amr = _findPrevMR(mp, root, mr);
     
-    if (NULL == f0)
+    if (NULL == amr)
     {
-        a_f->next = _getMRoffset(mp, root);
-        root = a_f;
-
-        return root;
+        mr->next = _getMRoffset(mp, root);
+        return mr;
     }
-    if (0 != f0->next)
+    if (0 != amr->next)
     {
-        a_f->next = f0->next;
+        mr->next = amr->next;
     }
-    f0->next = _getMRoffset(mp, a_f);
+    amr->next = _getMRoffset(mp, mr);
 
     return root;
 }
@@ -224,7 +211,7 @@ static void _printList(const MemoryPool_t* mp, const MemoryRecord_t* mr)
         while (NULL != mr)
         {
             printf("[offset = %d],[size = %d], [next = %d], [pointer = %lu]\n",
-                    _getMRoffset(mp, mr), mr->size, mr->next, _getMemoryPtr(mr));
+                    _getMRoffset(mp, mr), mr->size, mr->next, (unsigned long)_getMemoryPtr(mr));
             mr = _getNext(mp, mr);
         }
     }
@@ -233,7 +220,7 @@ static void _printList(const MemoryPool_t* mp, const MemoryRecord_t* mr)
 void printMemoryPool(const MemoryPool_t* mp)
 {
     assert (NULL != mp);
-    printf("Memory Pool [base = %lu], [size = %d]:\n", mp->base, mp->size);
+    printf("Memory Pool [base = %lu], [size = %d]:\n", (unsigned long)mp->base, (unsigned int)mp->size);
     printf("Allocated List : \n");
     _printList(mp, mp->allocated);
     printf("Freed List : \n");
@@ -282,88 +269,96 @@ void* _alloc (MemoryPool_t* mp, uint32 size)
 {
     if (NULL == mp || 0 == size)
     {
-        printf("Invalid mp or size!\n");
+        printf("Invalid memory pool or size!\n");
         return NULL;
     }
     if(NULL == mp->freed)
     {
+        printf("The memory pool is full!\n");
         return NULL;
     }
-    MemoryRecord_t* f0 = mp->freed; 
+    MemoryRecord_t* amr = mp->freed; 
 
-    while (f0->size < size)
+    while (amr->size < size)
     {
-        f0 = _getNext(mp, f0);
-        if (NULL == _getNext(mp, f0))
+        amr = _getNext(mp, amr);
+        if (NULL == _getNext(mp, amr))
         {
             printf("Not enough memory!\n");
             return NULL;
         }
     } //while
 
-    if (size + sizeof(MemoryRecord_t) < f0->size) 
+    if (size + sizeof(MemoryRecord_t) < amr->size) 
     {   
-        _split(mp, f0 ,size);
+        _split(mp, amr ,size);
     }
 
-    mp->freed = _remove(mp, mp->freed, f0);
+    mp->freed = _remove(mp, mp->freed, amr);
 
-    mp->allocated = _InsertMR(mp, mp->allocated, f0);
+    mp->allocated = _insert(mp, mp->allocated, amr);
 
-    return _getMemoryPtr(f0); 
+    return _getMemoryPtr(amr); 
 }
 
 void _free(MemoryPool_t* mp,void* p)
 {
     if (NULL == mp || NULL == p || NULL == mp->allocated || NULL == mp->freed)
     {
-        printf("Invalid mp or p!\n");
+        printf("Invalid memory pool or pointer!\n");
         return;
     }
-    MemoryRecord_t* p0 = mp->allocated;
-    while (p != _getMemoryPtr(p0))
+    
+    MemoryRecord_t* amr = mp->allocated;
+    while (NULL != amr && p != _getMemoryPtr(amr))
     {
-        p0 = _getNext(mp, p0);
-        if (NULL == p0)
-        {
-            printf("The memory is not in the allocation!\n");
-            return;
-        }
+        amr = _getNext(mp, amr);
+        
     }//while
-    mp->allocated = _remove(mp, mp->allocated, p0);
-    MemoryRecord_t* f1 = _findPrevMR(mp, mp->freed, p0); 
-    if (NULL == f1)
+
+    if (NULL == amr)
     {
-        if (mp->freed == (MemoryRecord_t*)((u8*)p0 + sizeof(MemoryRecord_t) + p0->size))
+        printf("The memory is not in the allocation!\n");
+        return;
+    }
+    mp->allocated = _remove(mp, mp->allocated, amr);
+
+    MemoryRecord_t* amrPrev = _findPrevMR(mp, mp->freed, amr); 
+    if (NULL == amrPrev)
+    {
+        if (mp->freed == (MemoryRecord_t*)((u8*)amr + sizeof(MemoryRecord_t) + amr->size))
         {
-            p0->size = p0->size + sizeof(MemoryRecord_t) + mp->freed->size;
-            p0->next = mp->freed->next;
+            // merge the freed mr with the first node in the free list.
+            amr->size = amr->size + sizeof(MemoryRecord_t) + mp->freed->size;
+            amr->next = mp->freed->next;
         }
         else
         {
-            p0->next = _getMRoffset(mp, mp->freed);
+            amr->next = _getMRoffset(mp, mp->freed);
         }
-        mp->freed = p0;
+        mp->freed = amr;
 
         return;
     }
 
-    if (0 != f1->next)
+    if (0 != amrPrev->next) // if amrPrev is NOT the last node of the free list
     {
-        MemoryRecord_t* f2 = _getNext(mp, f1);
-        if (f2 == (MemoryRecord_t*)((u8*)p0 + sizeof(MemoryRecord_t) + p0->size))
+        MemoryRecord_t* amrLast = _getNext(mp, amrPrev);
+        if (amrLast == (MemoryRecord_t*)((u8*)amr + sizeof(MemoryRecord_t) + amr->size))
         {
-            mp->freed = _remove(mp, mp->freed, f2);
-            p0->size = p0->size + sizeof(MemoryRecord_t) + f2->size;
+            mp->freed = _remove(mp, mp->freed, amrLast);
+            amr->size = amr->size + sizeof(MemoryRecord_t) + amrLast->size;
         }
     }
-    if (p0 == (MemoryRecord_t*)((u8*)f1 + sizeof(MemoryRecord_t) + f1->size))
+
+    if (amr == (MemoryRecord_t*)((u8*)amrPrev + sizeof(MemoryRecord_t) + amrPrev->size))
     {
-        mp->freed = _remove(mp, mp->freed, f1);
-        f1->size = f1->size + sizeof(MemoryRecord_t) + p0->size;
-        p0 = f1;
+        mp->freed = _remove(mp, mp->freed, amrPrev);
+        amrPrev->size = amrPrev->size + sizeof(MemoryRecord_t) + amr->size;
+        amr = amrPrev;
     }
-    mp->freed = _InsertMR(mp, mp->freed, p0);
+
+    mp->freed = _insert(mp, mp->freed, amr);
 
     return;
 
