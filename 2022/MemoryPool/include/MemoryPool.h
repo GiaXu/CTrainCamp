@@ -28,4 +28,6 @@ void destroyMemoryPool (MemoryPool_t* mp);
 void* _alloc (MemoryPool_t* mp, uint32 size);
 void _free (MemoryPool_t* mp, void* p);
 
+void printMemoryPool(const MemoryPool_t* mp);
+
 #endif  //__MEMORY_POOL_H__
