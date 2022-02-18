@@ -9,9 +9,9 @@ include_directories("./include")
 
 #include(CTest)
 #enable_testing()
-add_library(mp src/MemoryPool.c)
+add_library(mp src/MemoryPool.c src/MemoryPool.cpp src/QuickSort.c)
 
-add_executable(mptest main.c)
+add_executable(mptest main.cpp)
 
 target_link_libraries(mptest mp)
 

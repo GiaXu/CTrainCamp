@@ -1,4 +1,9 @@
 #ifndef __MEMORY_POOL_H__
+#define __MEMORY_POOL_H__
+
+#ifdef __cplusplus
+extern "C"{
+#endif // __cplusplus
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,5 +34,9 @@ void* _alloc (MemoryPool_t* mp, uint32 size);
 void _free (MemoryPool_t* mp, void* p);
 
 void printMemoryPool(const MemoryPool_t* mp);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif  //__MEMORY_POOL_H__
