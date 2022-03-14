@@ -264,17 +264,6 @@ public class DataModel {
             return null;
     }
 
-    public int getHashCode(){
-        int hash0 = 100;
-        char a = 'a';
-        String s = "";
-        Integer hash = Integer.valueOf(hash0);
-        hash.hashCode();
-        return 0;
-    }
-
-
-
     private void release(){
         if (null != mUsersConnection){
             try {

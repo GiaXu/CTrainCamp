@@ -68,6 +68,10 @@ public class DBController
         return false;
     }
 
+    public boolean submit(String title, String content){
+
+        return false;
+    }
 
     private void close(){
         // disconnect from databases
