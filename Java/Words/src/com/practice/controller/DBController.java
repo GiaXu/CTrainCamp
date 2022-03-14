@@ -1,5 +1,8 @@
 package com.practice.controller;
 
+import com.practice.DataModel;
+
+import javax.xml.crypto.Data;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -10,6 +13,7 @@ public class DBController
 
     static final private String SALT = "4117EAF8-444D-4517-88E5-8C815D58E6B7";
     private DBController(){
+        DataModel aDataModel = DataModel.getInstance();
         // Connect to Users database
     }
 
@@ -29,17 +33,45 @@ public class DBController
     }
 
     public boolean login(String userName, String password){
-        String hashCode = makeHash(userName, password);
+        try {
+            String hashCode = makeHash(userName, password);
+
+            DataModel aDataModel = DataModel.getInstance();
+            String check = aDataModel.logIn(hashCode);
+            if(null == check)
+            {
+                return false;
+            }
+            return true;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return false;
     }
 
     public boolean signup(String userName, String password){
-        String hashCode = makeHash(userName, password);
+        try {
+            String hashCode = makeHash(userName, password);
+
+            DataModel aDataModel = DataModel.getInstance();
+            String check = aDataModel.signUp(hashCode);
+            if(null == check)
+            {
+                return false;
+            }
+            return true;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return false;
     }
 
+
     private void close(){
         // disconnect from databases
+        DataModel.releaseInstance();
     }
 
     static public DBController getInstance(){
