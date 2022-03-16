@@ -69,6 +69,25 @@ public class DBController
     }
 
     public boolean submit(String title, String content){
+        try {
+            String Ltitle = title.toLowerCase();
+            String reLtitle = Ltitle.replaceAll("(?!\")\\p{Punct}", " ");
+
+            String Lcontent = content.toLowerCase();
+            String reLcontent = Lcontent.replaceAll("(?!\")\\p{Punct}", " ");
+
+            String Words = reLtitle.concat(" " + reLcontent);
+            String[] Awords = Words.split("\\s");
+
+            for (String w : Awords) {
+                DataModel adata = DataModel.getInstance();
+                adata.insertWord(w);
+            }
+                return true;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         return false;
     }
