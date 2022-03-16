@@ -1,17 +1,40 @@
 package com.practice.controller;
 
+import com.mysql.cj.conf.IntegerProperty;
+import com.mysql.cj.conf.StringProperty;
 import com.practice.DataModel;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 
-import javax.xml.crypto.Data;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class DBController
 {
     static private DBController sController = null;
 
     static final private String SALT = "4117EAF8-444D-4517-88E5-8C815D58E6B7";
+
+    public static class WordItem{
+        private String word;
+        private int frequency;
+
+        public String getWord() { return word; }
+        public void setWord(String value) { word = value; }
+
+        public int getFrequency(){ return frequency; }
+        public void setFrequency(int value){ frequency = value;}
+
+        public WordItem(String _word, int _frequency){
+            setWord(_word);
+            setFrequency(_frequency);
+        }
+    };
+
     private DBController(){
         DataModel aDataModel = DataModel.getInstance();
         // Connect to Users database
@@ -68,8 +91,8 @@ public class DBController
         return false;
     }
 
-    public boolean submit(String title, String content){
-        try {
+    public boolean submit(String title, String content, Consumer<List<WordItem>> callback){
+	try {
             String lowerTitle = title.toLowerCase();
             String reLtitle = lowerTitle.replaceAll("(?!\")\\p{Punct}", " ");
 
@@ -83,13 +106,18 @@ public class DBController
                 DataModel adata = DataModel.getInstance();
                 adata.insertWord(w);
             }
-                return true;
+
+            ArrayList<WordItem> aResult = new ArrayList();
+        	aResult.add(new WordItem("hello",100));
+        	aResult.add(new WordItem("world", 101));
+        	callback.accept(aResult);
+        
+            return true;
 
         }catch (Exception e){
             e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     private void close(){
