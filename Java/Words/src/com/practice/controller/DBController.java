@@ -70,8 +70,8 @@ public class DBController
 
     public boolean submit(String title, String content){
         try {
-            String Ltitle = title.toLowerCase();
-            String reLtitle = Ltitle.replaceAll("(?!\")\\p{Punct}", " ");
+            String lowerTitle = title.toLowerCase();
+            String reLtitle = lowerTitle.replaceAll("(?!\")\\p{Punct}", " ");
 
             String Lcontent = content.toLowerCase();
             String reLcontent = Lcontent.replaceAll("(?!\")\\p{Punct}", " ");
