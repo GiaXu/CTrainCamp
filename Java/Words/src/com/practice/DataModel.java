@@ -188,11 +188,44 @@ public class DataModel {
         }
     }
 
-    /**
-     *
-     * @param userHashCode
-     * @return
-     */
+
+    public void insertWord(String word, int values){
+        try{
+            int count = checkFrequency(word);
+            Statement stat = mProjectConnection.createStatement();
+            if(0 == count) {
+                String insert = String.format("INSERT INTO Words(word) VALUES('%s')", word);
+                stat.execute(insert);
+            }
+            String setFrequency = String.format("UPDATE Words SET frequency = '%d' WHERE word='%s'", values, word);
+            stat.execute(setFrequency);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    public int checkFrequency(String word){
+        try{
+            String checkFre = String.format("SELECT frequency FROM Words WHERE word = '%s'",word);
+            Statement stat = mProjectConnection.createStatement();
+            if(stat.execute(checkFre)){
+                ResultSet re = stat.getResultSet();
+                if(re.next()){
+                    int count = re.getInt(1);
+
+                    return count;
+                }
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+
     private boolean checkDuplicates(String userHashCode){
         try{
             String checkDup = String.format("SELECT COUNT(user_hash) FROM Users WHERE user_hash = '%s'",userHashCode);
