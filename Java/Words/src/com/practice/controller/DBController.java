@@ -5,12 +5,15 @@ import com.mysql.cj.conf.StringProperty;
 import com.practice.DataModel;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.util.Pair;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class DBController
@@ -93,25 +96,41 @@ public class DBController
 
     public boolean submit(String title, String content, Consumer<List<WordItem>> callback){
 	try {
-            String lowerTitle = title.toLowerCase();
-            String reLtitle = lowerTitle.replaceAll("(?!\")\\p{Punct}", " ");
+            //String lowerTitle = title.toLowerCase();
+            //String reLtitle = lowerTitle.replaceAll("(?!_-)\\p{Punct}", " ");
 
             String Lcontent = content.toLowerCase();
-            String reLcontent = Lcontent.replaceAll("(?!\")\\p{Punct}", " ");
+            String reLcontent = Lcontent.replaceAll("(?!_-)\\p{Punct}", " ");
 
-            String Words = reLtitle.concat(" " + reLcontent);
-            String[] Awords = Words.split("\\s");
+            String[] aWords = reLcontent.split("\\s");
 
-            for (String w : Awords) {
-                DataModel adata = DataModel.getInstance();
-                adata.insertWord(w);
+            DataModel aData = DataModel.getInstance();
+
+            //insert aWords into wordsMap
+            HashMap<String,Integer> wordsMap = new HashMap<>();
+
+            for (String aWord : aWords) {
+                if(wordsMap.containsKey(aWord)){
+                    int frequency = wordsMap.get(aWord);
+                    wordsMap.put(aWord, frequency + 1);
+                }
+                else {
+                    wordsMap.put(aWord, 1);
+                }
             }
 
-            ArrayList<WordItem> aResult = new ArrayList();
-        	aResult.add(new WordItem("hello",100));
-        	aResult.add(new WordItem("world", 101));
+            for (String w :wordsMap.keySet()) {
+                int fre = wordsMap.get(w);
+                aData.insertWord(w,fre);
+            }
+
+            // update UI
+            ArrayList<WordItem> aResult = new ArrayList<>();
+            for (Map.Entry<String, Integer> anItem : wordsMap.entrySet()) {
+                aResult.add( new WordItem(anItem.getKey(), anItem.getValue()));
+            }
         	callback.accept(aResult);
-        
+
             return true;
 
         }catch (Exception e){

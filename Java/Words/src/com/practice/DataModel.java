@@ -189,35 +189,32 @@ public class DataModel {
     }
 
 
-    public void insertWord(String word){
+    public void insertWord(String word, int values){
         try{
-            if(checkFrequency(word)){
-                return;
-            }
-            String sql = String.format("INSERT INTO Words(word) VALUES(%s)",word);
+            int count = checkFrequency(word);
             Statement stat = mProjectConnection.createStatement();
-            stat.execute(sql);
+            if(0 == count) {
+                String insert = String.format("INSERT INTO Words(word) VALUES('%s')", word);
+                stat.execute(insert);
+            }
+            String setFrequency = String.format("UPDATE Words SET frequency = '%d' WHERE word='%s'", values, word);
+            stat.execute(setFrequency);
 
         }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
-    private boolean checkFrequency(String word){
+    public int checkFrequency(String word){
         try{
-            String checkFre = String.format("SELECT COUNT(word) FROM Words WHERE word = '%s'",word);
+            String checkFre = String.format("SELECT frequency FROM Words WHERE word = '%s'",word);
             Statement stat = mProjectConnection.createStatement();
             if(stat.execute(checkFre)){
                 ResultSet re = stat.getResultSet();
                 if(re.next()){
                     int count = re.getInt(1);
-                    if(0 != count) {
-                        String updateFre = String.format("UPDATE Words SET frequency = '%d+1' WHERE word=word", count);
-                        Statement stmt = mProjectConnection.createStatement();
-                        stmt.execute(updateFre);
 
-                        return true;
-                    }
+                    return count;
                 }
             }
 
@@ -225,7 +222,7 @@ public class DataModel {
             e.printStackTrace();
         }
 
-        return false;
+        return 0;
     }
 
 
