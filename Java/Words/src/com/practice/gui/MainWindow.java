@@ -1,6 +1,7 @@
 package com.practice.gui;
 
 import com.practice.controller.DBController;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -8,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -15,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class MainWindow
 {
@@ -32,10 +35,14 @@ public class MainWindow
     private final RadioButton mRadioRecent;
     private final RadioButton mRadioAll;
 
+    private final ProgressIndicator mPI;
+
     private final TableView<DBController.WordItem> mDBTableView;
 
     private MainWindow(Stage primaryStage, ObservableList<DBController.WordItem> dataSource){
         final double rem = new Text("").getLayoutBounds().getHeight();
+        mPI = new ProgressIndicator();
+        mPI.setVisible(false);
 
         // create database view panel
         mInputPanel = new BorderPane();
@@ -46,7 +53,7 @@ public class MainWindow
 
         mDBTableView = new TableView<>();
         mDBTableView.setItems(dataSource);
-
+        mDBTableView.editableProperty().set(true);
         TableColumn<DBController.WordItem, String> column0 = new TableColumn<>("Word");
         column0.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, String>("word"));
         column0.setMinWidth(200.0);
@@ -54,15 +61,18 @@ public class MainWindow
         TableColumn<DBController.WordItem, Integer> column1 = new TableColumn<>("Count");
         column1.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Integer>("frequency"));
 
-        mDBTableView.getColumns().setAll(column0, column1);
+        TableColumn<DBController.WordItem, Boolean> columnX = new TableColumn<>("");
+        columnX.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Boolean>("delete"));
+        columnX.setCellFactory(new Callback<TableColumn<DBController.WordItem,Boolean>,TableCell<DBController.WordItem,Boolean>>(){
+            @Override public
+            TableCell<DBController.WordItem,Boolean> call( TableColumn<DBController.WordItem,Boolean> p ){
+                return new CheckBoxTableCell<>();
+            }
+        });
+
+        mDBTableView.getColumns().setAll(column0, column1, columnX);
 
         mDBViewPanel.setCenter(mDBTableView);
-
-        mBtnBackToInput = new Button("Back");
-        mBtnBackToInput.setOnAction(event -> {
-            mDBViewPanel.setVisible(false);
-            mInputPanel.setVisible(true);
-        });
 
         ToggleGroup aRadioGroup = new ToggleGroup();
 
@@ -71,6 +81,14 @@ public class MainWindow
         mRadioAll = new RadioButton("All");
         mRadioAll.setToggleGroup(aRadioGroup);
 
+        mBtnBackToInput = new Button("Back");
+        mBtnBackToInput.setOnAction(event -> {
+            mDBViewPanel.setVisible(false);
+            mRadioAll.setSelected(false);
+            mRadioRecent.setSelected(false);
+            mInputPanel.setVisible(true);
+        });
+
         aRadioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
         {
             @Override
@@ -78,15 +96,30 @@ public class MainWindow
             {
                 Object selectedToggle = aRadioGroup.getSelectedToggle();
                 if (selectedToggle == mRadioRecent) {
-                    DBController.getInstance().queryRecent(listOfWords ->{
-                        dataSource.clear();
-                        dataSource.addAll(listOfWords);
-                    });
+                    showProgressIndicator();
+
+                    new Thread(()->{
+                        DBController.getInstance().queryRecent(listOfWords ->{
+                            Platform.runLater(()->{
+                                dataSource.clear();
+                                dataSource.addAll(listOfWords);
+                                hideProgressIndicator();
+                            });
+                        });
+                    }).start();
                 } else if (selectedToggle == mRadioAll) {
-                    DBController.getInstance().queryAll(listOfWords ->{
-                        dataSource.clear();
-                        dataSource.addAll(listOfWords);
-                    });
+                    showProgressIndicator();
+
+                    new Thread(()->{
+                        DBController.getInstance().queryAll(listOfWords ->{
+                            Platform.runLater(()->{
+                                dataSource.clear();
+                                dataSource.addAll(listOfWords);
+                                hideProgressIndicator();
+                            });
+                        });
+                    }).start();
+
                 }
             }
         });
@@ -118,31 +151,40 @@ public class MainWindow
 
         Button btnSubmit = new Button("Submit");
         btnSubmit.setDefaultButton(true);
+        btnSubmit.setDisable(true);
 
         btnSubmit.setOnAction(event ->{
-            DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(listOfWords ->{
-                mInputPanel.setVisible(false);
-                mInputTitle.setText("");
-                mInputContent.setText("");
-                mDBViewPanel.setVisible(true);
-                mBtnDelete.setDisable(true);
-                mRadioRecent.setSelected(true);
-                mRadioRecent.requestFocus();
-            }));
+            showProgressIndicator();
+            new Thread(()->{
+                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(listOfWords ->{
+                    Platform.runLater(()->{
+                        mInputPanel.setVisible(false);
+                        mInputTitle.setText("");
+                        mInputContent.setText("");
+                        mDBViewPanel.setVisible(true);
+                        mBtnDelete.setDisable(true);
+                        mRadioRecent.setSelected(true);
+                        mRadioRecent.requestFocus();
+                        hideProgressIndicator();
+                    });
+                }));
+            }).start();
         });
 
         Button btnSkip = new Button("Skip");
 
         btnSkip.setOnAction(event ->{
-            DBController.getInstance().queryAll(listOfWords ->{
-                mInputPanel.setVisible(false);
-                mInputTitle.setText("");
-                mInputContent.setText("");
-                mDBViewPanel.setVisible(true);
-                mBtnDelete.setDisable(true);
-                mRadioAll.setSelected(true);
-                mRadioAll.requestFocus();
-            });
+            mInputPanel.setVisible(false);
+            mInputTitle.setText("");
+            mInputContent.setText("");
+            mDBViewPanel.setVisible(true);
+            mBtnDelete.setDisable(true);
+            mRadioAll.setSelected(true);
+            mRadioAll.requestFocus();
+        });
+
+        mInputContent.textProperty().addListener((arg0, oldValue, newValue) ->{
+            btnSubmit.setDisable( mInputContent.getText().trim().isEmpty() );
         });
 
         HBox InputPanelBottomBar = new HBox(200.0);
@@ -160,6 +202,7 @@ public class MainWindow
         mStackPanel.setAlignment(Pos.CENTER);
         mStackPanel.getChildren().add(mInputPanel);
         mStackPanel.getChildren().add(mDBViewPanel);
+        mStackPanel.getChildren().add(mPI);
 
         Scene scene = new Scene(mStackPanel);
 
@@ -167,6 +210,14 @@ public class MainWindow
         primaryStage.setTitle("Words");
 
         return;
+    }
+
+    private void showProgressIndicator(){
+        mPI.setVisible(true);
+    }
+
+    private void hideProgressIndicator(){
+        mPI.setVisible(false);
     }
 
     public static MainWindow create(Stage primaryStage, ObservableList<DBController.WordItem> dataSource){

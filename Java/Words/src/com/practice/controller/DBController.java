@@ -22,17 +22,21 @@ public class DBController
 
     static final private String SALT = "4117EAF8-444D-4517-88E5-8C815D58E6B7";
 
-    private ArrayList<WordItem> mRecentInsertWords = new ArrayList<>();
+    private final ArrayList<WordItem> mRecentInsertWords = new ArrayList<>();
 
     public static class WordItem{
         private String word;
         private int frequency;
+        private boolean delete = false;
 
         public String getWord() { return word; }
         public void setWord(String value) { word = value; }
 
         public int getFrequency(){ return frequency; }
         public void setFrequency(int value){ frequency = value;}
+
+        public void setDelete(boolean value){ delete = value;}
+        public boolean getDelete(){ return delete; }
 
         public WordItem(String _word, int _frequency){
             setWord(_word);
