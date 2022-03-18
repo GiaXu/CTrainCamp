@@ -13,7 +13,7 @@ public class MyApplication extends Application
 {
     private Stage mLoginWindow = null;
     private Stage mSignupWindow = null;
-    private Stage mMainWindow = null;
+    private MainWindow mMainWindow = null;
 
     private ArrayList<DBController.WordItem> mWordItemList = new ArrayList<>();
     private ObservableList<DBController.WordItem> mDataSource = FXCollections.observableArrayList(mWordItemList);
@@ -50,8 +50,8 @@ public class MyApplication extends Application
         } // while
 
         if (WindowStates.State.STATE_WORKING == WindowStates.state) {
-            mMainWindow = new InputWindowBuilder().create(primaryStage, mDataSource);
-            mMainWindow.show();
+            mMainWindow = MainWindow.create(primaryStage, mDataSource);
+            primaryStage.show();
         } else {
             DBController.release();
             Platform.exit();
