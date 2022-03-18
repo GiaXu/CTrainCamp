@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -16,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class MainWindow
 {
@@ -51,7 +53,7 @@ public class MainWindow
 
         mDBTableView = new TableView<>();
         mDBTableView.setItems(dataSource);
-
+        mDBTableView.editableProperty().set(true);
         TableColumn<DBController.WordItem, String> column0 = new TableColumn<>("Word");
         column0.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, String>("word"));
         column0.setMinWidth(200.0);
@@ -59,7 +61,16 @@ public class MainWindow
         TableColumn<DBController.WordItem, Integer> column1 = new TableColumn<>("Count");
         column1.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Integer>("frequency"));
 
-        mDBTableView.getColumns().setAll(column0, column1);
+        TableColumn<DBController.WordItem, Boolean> columnX = new TableColumn<>("");
+        columnX.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Boolean>("delete"));
+        columnX.setCellFactory(new Callback<TableColumn<DBController.WordItem,Boolean>,TableCell<DBController.WordItem,Boolean>>(){
+            @Override public
+            TableCell<DBController.WordItem,Boolean> call( TableColumn<DBController.WordItem,Boolean> p ){
+                return new CheckBoxTableCell<>();
+            }
+        });
+
+        mDBTableView.getColumns().setAll(column0, column1, columnX);
 
         mDBViewPanel.setCenter(mDBTableView);
 
