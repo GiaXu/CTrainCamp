@@ -15,9 +15,6 @@ public class MyApplication extends Application
     private Stage mSignupWindow = null;
     private MainWindow mMainWindow = null;
 
-    private ArrayList<DBController.WordItem> mWordItemList = new ArrayList<>();
-    private ObservableList<DBController.WordItem> mDataSource = FXCollections.observableArrayList(mWordItemList);
-
     @Override
     public void start(Stage primaryStage) throws Exception
     {
@@ -50,7 +47,7 @@ public class MyApplication extends Application
         } // while
 
         if (WindowStates.State.STATE_WORKING == WindowStates.state) {
-            mMainWindow = MainWindow.create(primaryStage, mDataSource);
+            mMainWindow = MainWindow.create(primaryStage);
             primaryStage.show();
         } else {
             DBController.release();

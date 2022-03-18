@@ -4,6 +4,7 @@ import com.practice.controller.DBController;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,38 +20,123 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.util.ArrayList;
+
 public class MainWindow
 {
     private final int PREFERRED_WIDTH = 1024;
     private final int PREFERRED_HEIGHT = 768;
     private StackPane mStackPanel;
 
-    private final BorderPane mInputPanel;
-    private final TextField mInputTitle;
-    private final TextArea mInputContent;
+    private BorderPane mInputPanel;
+    private TextField mInputTitle;
+    private TextArea mInputContent;
 
-    private final BorderPane mDBViewPanel;
-    private final Button mBtnBackToInput;
-    private final Button mBtnDelete;
-    private final RadioButton mRadioRecent;
-    private final RadioButton mRadioAll;
+    private BorderPane mDBViewPanel;
+    private Button mBtnBackToInput;
+    private Button mBtnDelete;
+    private RadioButton mRadioRecent;
+    private RadioButton mRadioAll;
 
     private final ProgressIndicator mPI;
 
-    private final TableView<DBController.WordItem> mDBTableView;
+    private TableView<DBController.WordItem> mDBTableView;
 
-    private MainWindow(Stage primaryStage, ObservableList<DBController.WordItem> dataSource){
+    private MainWindow(Stage primaryStage){
         final double rem = new Text("").getLayoutBounds().getHeight();
         mPI = new ProgressIndicator();
         mPI.setVisible(false);
 
         // create database view panel
+        initInputPanel(rem);
+
+        initDBViewPanel(rem);
+
+        mStackPanel = new StackPane();
+        mStackPanel.setAlignment(Pos.CENTER);
+        mStackPanel.getChildren().addAll(mInputPanel, mDBViewPanel, mPI);
+
+        Scene scene = new Scene(mStackPanel);
+
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Words");
+
+        return;
+    }
+
+    private void initInputPanel(double rem){
         mInputPanel = new BorderPane();
+
+        mInputTitle = new TextField();
+
+        HBox titleBar = new HBox(10.0);
+        titleBar.setAlignment(Pos.CENTER);
+        titleBar.getChildren().add(new Label("Title"));
+        titleBar.getChildren().add(mInputTitle);
+        titleBar.setPadding(new Insets(rem * 0.8));
+        HBox.setHgrow(mInputTitle, Priority.ALWAYS );
+
+        mInputContent = new TextArea();
+        mInputContent.setPadding(new Insets( rem * 0.8));
+        mInputContent.wrapTextProperty().set(true);
+
+        Button btnSubmit = new Button("Submit");
+        btnSubmit.setDefaultButton(true);
+        btnSubmit.setDisable(true);
+
+        btnSubmit.setOnAction(event ->{
+            showProgressIndicator();
+            new Thread(()->{
+                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(listOfWords ->{
+                    Platform.runLater(()->{
+                        mInputPanel.setVisible(false);
+                        mInputTitle.setText("");
+                        mInputContent.setText("");
+                        mDBViewPanel.setVisible(true);
+                        mBtnDelete.setDisable(true);
+                        mRadioRecent.setSelected(true);
+                        mRadioRecent.requestFocus();
+                        hideProgressIndicator();
+                    });
+                }));
+            }).start();
+        });
+
+        Button btnSkip = new Button("Skip");
+
+        btnSkip.setOnAction(event ->{
+            mInputPanel.setVisible(false);
+            mInputTitle.setText("");
+            mInputContent.setText("");
+            mDBViewPanel.setVisible(true);
+            mBtnDelete.setDisable(true);
+            mRadioAll.setSelected(true);
+            mRadioAll.requestFocus();
+        });
+
+        mInputContent.textProperty().addListener((arg0, oldValue, newValue) ->{
+            btnSubmit.setDisable( mInputContent.getText().trim().isEmpty() );
+        });
+
+        HBox InputPanelBottomBar = new HBox(200.0);
+        InputPanelBottomBar.setPadding(new Insets(rem * 0.8));
+        InputPanelBottomBar.setAlignment(Pos.CENTER);
+        InputPanelBottomBar.getChildren().addAll(btnSubmit, btnSkip);
+
+        mInputPanel.setTop(titleBar);
+        mInputPanel.setCenter(mInputContent);
+        mInputPanel.setBottom(InputPanelBottomBar);
+
+        mInputPanel.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
+    }
+
+    private void initDBViewPanel(double rem){
         mDBViewPanel = new BorderPane();
 
         mDBViewPanel.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
         mDBViewPanel.setPadding(new Insets(0.8 * rem));
 
+        ObservableList<DBController.WordItem> dataSource = FXCollections.observableArrayList(new ArrayList<>());
         mDBTableView = new TableView<>();
         mDBTableView.setItems(dataSource);
         mDBTableView.editableProperty().set(true);
@@ -133,83 +219,6 @@ public class MainWindow
 
         mDBViewPanel.setBottom(DBPanelBottomBar);
         mDBViewPanel.setVisible(false);
-
-        // create input panel
-
-        mInputTitle = new TextField();
-
-        HBox titleBar = new HBox(10.0);
-        titleBar.setAlignment(Pos.CENTER);
-        titleBar.getChildren().add(new Label("Title"));
-        titleBar.getChildren().add(mInputTitle);
-        titleBar.setPadding(new Insets(rem * 0.8));
-        HBox.setHgrow(mInputTitle, Priority.ALWAYS );
-
-        mInputContent = new TextArea();
-        mInputContent.setPadding(new Insets( rem * 0.8));
-        mInputContent.wrapTextProperty().set(true);
-
-        Button btnSubmit = new Button("Submit");
-        btnSubmit.setDefaultButton(true);
-        btnSubmit.setDisable(true);
-
-        btnSubmit.setOnAction(event ->{
-            showProgressIndicator();
-            new Thread(()->{
-                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(listOfWords ->{
-                    Platform.runLater(()->{
-                        mInputPanel.setVisible(false);
-                        mInputTitle.setText("");
-                        mInputContent.setText("");
-                        mDBViewPanel.setVisible(true);
-                        mBtnDelete.setDisable(true);
-                        mRadioRecent.setSelected(true);
-                        mRadioRecent.requestFocus();
-                        hideProgressIndicator();
-                    });
-                }));
-            }).start();
-        });
-
-        Button btnSkip = new Button("Skip");
-
-        btnSkip.setOnAction(event ->{
-            mInputPanel.setVisible(false);
-            mInputTitle.setText("");
-            mInputContent.setText("");
-            mDBViewPanel.setVisible(true);
-            mBtnDelete.setDisable(true);
-            mRadioAll.setSelected(true);
-            mRadioAll.requestFocus();
-        });
-
-        mInputContent.textProperty().addListener((arg0, oldValue, newValue) ->{
-            btnSubmit.setDisable( mInputContent.getText().trim().isEmpty() );
-        });
-
-        HBox InputPanelBottomBar = new HBox(200.0);
-        InputPanelBottomBar.setPadding(new Insets(rem * 0.8));
-        InputPanelBottomBar.setAlignment(Pos.CENTER);
-        InputPanelBottomBar.getChildren().addAll(btnSubmit, btnSkip);
-
-        mInputPanel.setTop(titleBar);
-        mInputPanel.setCenter(mInputContent);
-        mInputPanel.setBottom(InputPanelBottomBar);
-
-        mInputPanel.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
-
-        mStackPanel = new StackPane();
-        mStackPanel.setAlignment(Pos.CENTER);
-        mStackPanel.getChildren().add(mInputPanel);
-        mStackPanel.getChildren().add(mDBViewPanel);
-        mStackPanel.getChildren().add(mPI);
-
-        Scene scene = new Scene(mStackPanel);
-
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Words");
-
-        return;
     }
 
     private void showProgressIndicator(){
@@ -220,7 +229,7 @@ public class MainWindow
         mPI.setVisible(false);
     }
 
-    public static MainWindow create(Stage primaryStage, ObservableList<DBController.WordItem> dataSource){
-        return new MainWindow(primaryStage, dataSource);
+    public static MainWindow create(Stage primaryStage){
+        return new MainWindow(primaryStage);
     }
 }
