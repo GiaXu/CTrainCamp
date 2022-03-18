@@ -5,8 +5,6 @@ import javax.swing.table.TableCellEditor;
 import java.sql.*;
 import java.util.UUID;
 
-
-
 public class DataModel {
 
     static class DBConnection {

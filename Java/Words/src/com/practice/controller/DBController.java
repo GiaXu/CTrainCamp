@@ -22,6 +22,8 @@ public class DBController
 
     static final private String SALT = "4117EAF8-444D-4517-88E5-8C815D58E6B7";
 
+    private ArrayList<WordItem> mRecentInsertWords = new ArrayList<>();
+
     public static class WordItem{
         private String word;
         private int frequency;
@@ -125,11 +127,11 @@ public class DBController
             }
 
             // update UI
-            ArrayList<WordItem> aResult = new ArrayList<>();
+            mRecentInsertWords.clear();
             for (Map.Entry<String, Integer> anItem : wordsMap.entrySet()) {
-                aResult.add( new WordItem(anItem.getKey(), anItem.getValue()));
+                mRecentInsertWords.add( new WordItem(anItem.getKey(), anItem.getValue()));
             }
-        	callback.accept(aResult);
+        	callback.accept(mRecentInsertWords);
 
             return true;
 
@@ -137,6 +139,20 @@ public class DBController
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void queryAll(Consumer<List<WordItem>> callback){
+        ArrayList<WordItem> aResult = new ArrayList<>();
+        aResult.add(new WordItem("Hello", 100));
+        aResult.add(new WordItem("This", 99));
+        aResult.add(new WordItem("is", 98));
+        aResult.add(new WordItem("all", 98));
+        aResult.add(new WordItem("words", 98));
+        callback.accept(aResult);
+    }
+
+    public void queryRecent(Consumer<List<WordItem>> callback){
+        callback.accept(mRecentInsertWords);
     }
 
     private void close(){
