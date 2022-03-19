@@ -21,6 +21,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class MainWindow
 {
@@ -41,13 +43,36 @@ public class MainWindow
     private final ProgressIndicator mPI;
 
     private TableView<DBController.WordItem> mDBTableView;
+    private int mSelectedItemCount = 0;
+
+    private ChangeListener<Boolean> mCheckBoxCellListener = (observableValue, aBoolean, t1) ->
+    {
+        if (t1) {
+            mSelectedItemCount += 1;
+        } else {
+            mSelectedItemCount -= 1;
+        }
+        mSelectedItemCount = Math.max(0, mSelectedItemCount);
+        mBtnDelete.setDisable(0 == mSelectedItemCount);
+    };
+
+    private void addListenerToDataSource(List<DBController.WordItem> dataSource){
+        for (DBController.WordItem item : dataSource){
+            item.getSelected().addListener(mCheckBoxCellListener);
+        }
+    }
+
+    private void removeListenerFromDataSource(List<DBController.WordItem> dataSource){
+        for (DBController.WordItem item :dataSource) {
+            item.getSelected().removeListener(mCheckBoxCellListener);
+        }
+    }
 
     private MainWindow(Stage primaryStage){
         final double rem = new Text("").getLayoutBounds().getHeight();
         mPI = new ProgressIndicator();
         mPI.setVisible(false);
 
-        // create database view panel
         initInputPanel(rem);
 
         initDBViewPanel(rem);
@@ -87,7 +112,7 @@ public class MainWindow
         btnSubmit.setOnAction(event ->{
             showProgressIndicator();
             new Thread(()->{
-                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(listOfWords ->{
+                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(() ->{
                     Platform.runLater(()->{
                         mInputPanel.setVisible(false);
                         mInputTitle.setText("");
@@ -141,22 +166,17 @@ public class MainWindow
         mDBTableView.setItems(dataSource);
         mDBTableView.editableProperty().set(true);
         TableColumn<DBController.WordItem, String> column0 = new TableColumn<>("Word");
-        column0.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, String>("word"));
+        column0.setCellValueFactory(new PropertyValueFactory<>("word"));
         column0.setMinWidth(200.0);
 
         TableColumn<DBController.WordItem, Integer> column1 = new TableColumn<>("Count");
-        column1.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Integer>("frequency"));
+        column1.setCellValueFactory(new PropertyValueFactory<>("frequency"));
 
-        TableColumn<DBController.WordItem, Boolean> columnX = new TableColumn<>("");
-        columnX.setCellValueFactory(new PropertyValueFactory<DBController.WordItem, Boolean>("delete"));
-        columnX.setCellFactory(new Callback<TableColumn<DBController.WordItem,Boolean>,TableCell<DBController.WordItem,Boolean>>(){
-            @Override public
-            TableCell<DBController.WordItem,Boolean> call( TableColumn<DBController.WordItem,Boolean> p ){
-                return new CheckBoxTableCell<>();
-            }
-        });
+        TableColumn<DBController.WordItem, Boolean> columnX = new TableColumn<>("Selected");
+        columnX.setCellValueFactory(param -> param.getValue().getSelected());
+        columnX.setCellFactory(CheckBoxTableCell.forTableColumn(columnX));
 
-        mDBTableView.getColumns().setAll(column0, column1, columnX);
+        mDBTableView.getColumns().setAll(columnX, column0, column1);
 
         mDBViewPanel.setCenter(mDBTableView);
 
@@ -183,9 +203,11 @@ public class MainWindow
                 Object selectedToggle = aRadioGroup.getSelectedToggle();
                 if (selectedToggle == mRadioRecent) {
                     showProgressIndicator();
-
+                    mBtnDelete.setDisable(true);
                     new Thread(()->{
                         DBController.getInstance().queryRecent(listOfWords ->{
+                            removeListenerFromDataSource(dataSource);
+                            addListenerToDataSource(listOfWords);
                             Platform.runLater(()->{
                                 dataSource.clear();
                                 dataSource.addAll(listOfWords);
@@ -195,9 +217,11 @@ public class MainWindow
                     }).start();
                 } else if (selectedToggle == mRadioAll) {
                     showProgressIndicator();
-
+                    mBtnDelete.setDisable(true);
                     new Thread(()->{
                         DBController.getInstance().queryAll(listOfWords ->{
+                            removeListenerFromDataSource(dataSource);
+                            addListenerToDataSource(listOfWords);
                             Platform.runLater(()->{
                                 dataSource.clear();
                                 dataSource.addAll(listOfWords);
@@ -216,6 +240,60 @@ public class MainWindow
         DBPanelBottomBar.setPadding(new Insets(rem * 0.8));
         DBPanelBottomBar.setAlignment(Pos.CENTER);
         DBPanelBottomBar.getChildren().addAll(mBtnBackToInput, mRadioRecent, mRadioAll, mBtnDelete);
+
+        mBtnDelete.setOnAction(event -> {
+            showProgressIndicator();
+            mBtnDelete.setDisable(true);
+            DBPanelBottomBar.setDisable(true);
+            mDBTableView.setEditable(false);
+            final boolean isRecentSelected = mRadioRecent.isSelected();
+            new Thread(()->{
+                HashSet<String> aSet = new HashSet<>();
+                for (DBController.WordItem item : dataSource){
+                    if (item.getSelected().get()){
+                        aSet.add( item.getWord() );
+                    }
+                }
+                DBController aDB = DBController.getInstance();
+                aDB.deleteWords(aSet, () ->
+                {
+                    if (isRecentSelected)
+                    {
+                        aDB.queryRecent(listOfWords ->
+                                        {
+                                            removeListenerFromDataSource(dataSource);
+                                            addListenerToDataSource(listOfWords);
+                                            Platform.runLater(() ->
+                                                              {
+                                                                  dataSource.clear();
+                                                                  dataSource.addAll(listOfWords);
+                                                                  DBPanelBottomBar.setDisable(false);
+                                                                  mDBTableView.setEditable(true);
+                                                                  hideProgressIndicator();
+                                                              });
+
+                                        });
+                    }
+                    else
+                    {
+                        aDB.queryAll(listOfWords ->
+                                     {
+                                         removeListenerFromDataSource(dataSource);
+                                         addListenerToDataSource(listOfWords);
+                                         Platform.runLater(() ->
+                                                           {
+                                                               dataSource.clear();
+                                                               dataSource.addAll(listOfWords);
+                                                               DBPanelBottomBar.setDisable(false);
+                                                               mDBTableView.setEditable(true);
+                                                               hideProgressIndicator();
+                                                           });
+                                     });
+                    }
+                });
+
+            }).start();
+        });
 
         mDBViewPanel.setBottom(DBPanelBottomBar);
         mDBViewPanel.setVisible(false);
