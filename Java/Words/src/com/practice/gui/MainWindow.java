@@ -255,43 +255,41 @@ public class MainWindow
                     }
                 }
                 DBController aDB = DBController.getInstance();
-                aDB.deleteWords(aSet, () ->
-                {
-                    if (isRecentSelected)
-                    {
+                if (isRecentSelected) {
+                    aDB.deleteRecentWords(aSet, ()->{
                         aDB.queryRecent(listOfWords ->
-                                        {
-                                            removeListenerFromDataSource(dataSource);
-                                            addListenerToDataSource(listOfWords);
-                                            Platform.runLater(() ->
-                                                              {
-                                                                  dataSource.clear();
-                                                                  dataSource.addAll(listOfWords);
-                                                                  DBPanelBottomBar.setDisable(false);
-                                                                  mDBTableView.setEditable(true);
-                                                                  hideProgressIndicator();
-                                                              });
+                        {
+                            removeListenerFromDataSource(dataSource);
+                            addListenerToDataSource(listOfWords);
+                            Platform.runLater(() ->
+                            {
+                                dataSource.clear();
+                                dataSource.addAll(listOfWords);
+                                DBPanelBottomBar.setDisable(false);
+                                mDBTableView.setEditable(true);
+                                hideProgressIndicator();
+                            });
 
-                                        });
-                    }
-                    else
-                    {
+                        });
+                    });
+                }
+                else {
+                    aDB.deleteWords(aSet, ()->{
                         aDB.queryAll(listOfWords ->
-                                     {
-                                         removeListenerFromDataSource(dataSource);
-                                         addListenerToDataSource(listOfWords);
-                                         Platform.runLater(() ->
-                                                           {
-                                                               dataSource.clear();
-                                                               dataSource.addAll(listOfWords);
-                                                               DBPanelBottomBar.setDisable(false);
-                                                               mDBTableView.setEditable(true);
-                                                               hideProgressIndicator();
-                                                           });
-                                     });
-                    }
-                });
-
+                        {
+                            removeListenerFromDataSource(dataSource);
+                            addListenerToDataSource(listOfWords);
+                            Platform.runLater(() ->
+                            {
+                                dataSource.clear();
+                                dataSource.addAll(listOfWords);
+                                DBPanelBottomBar.setDisable(false);
+                                mDBTableView.setEditable(true);
+                                hideProgressIndicator();
+                            });
+                        });
+                    });
+                }
             }).start();
         });
 

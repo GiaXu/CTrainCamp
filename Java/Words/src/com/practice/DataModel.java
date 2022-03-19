@@ -1,8 +1,10 @@
 package com.practice;
 
-import javax.swing.*;
-import javax.swing.table.TableCellEditor;
+import com.practice.config.DBConfig;
+import com.practice.controller.DBController;
+
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class DataModel {
@@ -65,7 +67,11 @@ public class DataModel {
 
     private DataModel()
     {
-        mUsersConnection = DBConnection.createConnection("jdbc:mysql://localhost:3306", "Users", "root", "Qaz1-wsx2");
+        mUsersConnection = DBConnection.createConnection(DBConfig.DATABASE_URL,
+                "Users",
+                DBConfig.DATABASE_USERNAME,
+                DBConfig.DATABASE_PASSWORD);
+
         sUserInitOK = initUsersTable();
     }
 
@@ -203,6 +209,28 @@ public class DataModel {
         }
     }
 
+    public ArrayList<DBController.WordItem> getWords(){
+        ArrayList<DBController.WordItem> aResult = new ArrayList<>();
+        try{
+            String getaWord = String.format("SELECT word,frequency FROM Words ORDER BY frequency DESC");
+            Statement stat = mProjectConnection.createStatement();
+            if(stat.execute(getaWord)){
+                ResultSet re = stat.getResultSet();
+                while (re.next()){
+                    String aWord = re.getString(1);
+                    int aFre = re.getInt(2);
+                   aResult.add(new DBController.WordItem(aWord, aFre));
+                }
+                re.close();
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return aResult;
+    }
+
     public int checkFrequency(String word){
         try{
             String checkFre = String.format("SELECT frequency FROM Words WHERE word = '%s'",word);
@@ -223,6 +251,19 @@ public class DataModel {
         return 0;
     }
 
+    public void deleteWord(String word){
+        try{
+            if(0 == checkFrequency(word)){
+                return;
+            }
+            String deleteWord = String.format("DELETE FROM Words WHERE word = '%s'",word);
+            Statement stat = mProjectConnection.createStatement();
+            stat.execute(deleteWord);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
 
     private boolean checkDuplicates(String userHashCode){
         try{
@@ -255,7 +296,11 @@ public class DataModel {
             Statement stmt = mUsersConnection.createStatement();
             stmt.execute(sql);
 
-            mProjectConnection = DBConnection.createConnection("jdbc:mysql://localhost:3306",newDBName,"root","Qaz1-wsx2");
+            mProjectConnection = DBConnection.createConnection(DBConfig.DATABASE_URL,
+                    newDBName,
+                    DBConfig.DATABASE_USERNAME,
+                    DBConfig.DATABASE_PASSWORD);
+
             sProjectInitOK = initProjectTable();
 
             return newDBName;
@@ -282,7 +327,10 @@ public class DataModel {
                         if(null != mProjectConnection){
                             mProjectConnection.close();
                         }
-                        mProjectConnection = DBConnection.createConnection("jdbc:mysql://localhost:3306", pro,"root","Qaz1-wsx2");
+                        mProjectConnection = DBConnection.createConnection(DBConfig.DATABASE_URL,
+                                pro,
+                                DBConfig.DATABASE_USERNAME,
+                                DBConfig.DATABASE_PASSWORD);
                         return pro;
                     }
                     rs.close();

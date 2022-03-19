@@ -15,6 +15,7 @@ import javafx.util.Pair;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.sql.Statement;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -43,15 +44,6 @@ public class DBController
         public WordItem(String _word, int _frequency){
             setWord(_word);
             setFrequency(_frequency);
-
-            getSelected().addListener(new ChangeListener<Boolean>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean t1)
-                {
-
-                }
-            });
         }
     };
 
@@ -127,6 +119,10 @@ public class DBController
             HashMap<String,Integer> wordsMap = new HashMap<>();
 
             for (String aWord : aWords) {
+                if (aWord.isBlank()){
+                    continue;
+                }
+
                 if(wordsMap.containsKey(aWord)){
                     int frequency = wordsMap.get(aWord);
                     wordsMap.put(aWord, frequency + 1);
@@ -147,6 +143,8 @@ public class DBController
                 mRecentInsertWords.add( new WordItem(anItem.getKey(), anItem.getValue()));
             }
 
+            mRecentInsertWords.sort((o1, o2) -> Integer.compare(o2.getFrequency(), o1.getFrequency()));
+
             callback.run();
             return true;
 
@@ -156,14 +154,12 @@ public class DBController
         }
     }
 
+
     public void queryAll(Consumer<List<WordItem>> callback){
         // query all records here:
-        ArrayList<WordItem> aResult = new ArrayList<>();
-        aResult.add(new WordItem("Hello", 100));
-        aResult.add(new WordItem("This", 99));
-        aResult.add(new WordItem("is", 98));
-        aResult.add(new WordItem("all", 98));
-        aResult.add(new WordItem("words", 98));
+
+        DataModel aData = DataModel.getInstance();
+        ArrayList<WordItem> aResult = aData.getWords();
 
         callback.accept(aResult);
     }
@@ -177,11 +173,22 @@ public class DBController
     }
 
     public void deleteWords(Set<String> words, Runnable onCompleted){
-        // delete words here:
-
+        DataModel aData = DataModel.getInstance();
+        for(String w:words) {
+            aData.deleteWord(w);
+        }
         onCompleted.run();
     }
 
+    public void deleteRecentWords(Set<String> words, Runnable onCompleted){
+        deleteWords(words, ()->{
+            for (String s:words) {
+                // update local cache
+                mRecentInsertWords.removeIf(item-> item.getWord().equals(s));
+            }
+            onCompleted.run();
+        });
+    }
     private void close(){
         // disconnect from databases
         DataModel.releaseInstance();
