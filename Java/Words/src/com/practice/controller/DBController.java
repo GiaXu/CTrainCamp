@@ -1,19 +1,21 @@
 package com.practice.controller;
 
+import com.mysql.cj.conf.BooleanProperty;
 import com.mysql.cj.conf.IntegerProperty;
 import com.mysql.cj.conf.StringProperty;
 import com.practice.DataModel;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableBooleanValue;
+import javafx.beans.value.ObservableValue;
 import javafx.util.Pair;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class DBController
@@ -27,7 +29,7 @@ public class DBController
     public static class WordItem{
         private String word;
         private int frequency;
-        private boolean delete = false;
+        private SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
 
         public String getWord() { return word; }
         public void setWord(String value) { word = value; }
@@ -35,12 +37,21 @@ public class DBController
         public int getFrequency(){ return frequency; }
         public void setFrequency(int value){ frequency = value;}
 
-        public void setDelete(boolean value){ delete = value;}
-        public boolean getDelete(){ return delete; }
+        public ObservableBooleanValue getSelected(){ return selected; }
+        public void setSelected(Boolean value){ selected.set(value);}
 
         public WordItem(String _word, int _frequency){
             setWord(_word);
             setFrequency(_frequency);
+
+            getSelected().addListener(new ChangeListener<Boolean>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean t1)
+                {
+
+                }
+            });
         }
     };
 
@@ -100,7 +111,7 @@ public class DBController
         return false;
     }
 
-    public boolean submit(String title, String content, Consumer<List<WordItem>> callback){
+    public boolean submit(String title, String content, Runnable callback){
 	try {
             //String lowerTitle = title.toLowerCase();
             //String reLtitle = lowerTitle.replaceAll("(?!_-)\\p{Punct}", " ");
@@ -135,8 +146,8 @@ public class DBController
             for (Map.Entry<String, Integer> anItem : wordsMap.entrySet()) {
                 mRecentInsertWords.add( new WordItem(anItem.getKey(), anItem.getValue()));
             }
-        	callback.accept(mRecentInsertWords);
 
+            callback.run();
             return true;
 
         }catch (Exception e){
@@ -146,17 +157,29 @@ public class DBController
     }
 
     public void queryAll(Consumer<List<WordItem>> callback){
+        // query all records here:
         ArrayList<WordItem> aResult = new ArrayList<>();
         aResult.add(new WordItem("Hello", 100));
         aResult.add(new WordItem("This", 99));
         aResult.add(new WordItem("is", 98));
         aResult.add(new WordItem("all", 98));
         aResult.add(new WordItem("words", 98));
+
         callback.accept(aResult);
     }
 
     public void queryRecent(Consumer<List<WordItem>> callback){
-        callback.accept(mRecentInsertWords);
+        ArrayList<WordItem> aCopy = new ArrayList<>();
+        for (WordItem item : mRecentInsertWords) {
+            aCopy.add( new WordItem(item.getWord(), item.getFrequency()));
+        }
+        callback.accept(aCopy);
+    }
+
+    public void deleteWords(Set<String> words, Runnable onCompleted){
+        // delete words here:
+
+        onCompleted.run();
     }
 
     private void close(){
