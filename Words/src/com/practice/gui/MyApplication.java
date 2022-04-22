@@ -9,21 +9,17 @@ import javafx.stage.Stage;
 
 import java.util.*;
 
-public class MyApplication extends Application
-{
+public class MyApplication extends Application {
     private Stage mLoginWindow = null;
     private Stage mSignupWindow = null;
     private MainWindow mMainWindow = null;
 
     @Override
-    public void start(Stage primaryStage) throws Exception
-    {
-        while( WindowStates.State.STATE_QUIT != WindowStates.state
-                && WindowStates.State.STATE_WORKING != WindowStates.state)
-        {
-            switch( WindowStates.state ){
-                case STATE_LOGIN:
-                {
+    public void start(Stage primaryStage) throws Exception {
+        while (WindowStates.State.STATE_QUIT != WindowStates.state
+                && WindowStates.State.STATE_WORKING != WindowStates.state) {
+            switch (WindowStates.state) {
+                case STATE_LOGIN: {
                     if (null == mLoginWindow) {
                         mLoginWindow = new LoginWindowBuilder().create();
                     }
@@ -31,8 +27,7 @@ public class MyApplication extends Application
                 }
                 break;
 
-                case STATE_SIGNUP:
-                {
+                case STATE_SIGNUP: {
                     if (null == mSignupWindow) {
                         mSignupWindow = new SignupWindowBuilder().create();
                     }

@@ -11,9 +11,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public final class LoginWindowBuilder
-{
-    public Stage create(){
+public final class LoginWindowBuilder {
+    public Stage create() {
         final double rem = new Text("").getLayoutBounds().getHeight();
         final GridPane aGridPanel = new GridPane();
         aGridPanel.setPadding(new Insets(0.8 * rem));
@@ -30,12 +29,12 @@ public final class LoginWindowBuilder
         final Button btnLogin = new Button("Login");
         btnLogin.setDisable(true);
 
-        userName.textProperty().addListener((arg0, oldValue, newValue) ->{
+        userName.textProperty().addListener((arg0, oldValue, newValue) -> {
             boolean btnDisabled = userName.getText().trim().isEmpty() || password.getText().trim().isEmpty();
             btnLogin.setDisable(btnDisabled);
         });
 
-        password.textProperty().addListener((arg0, oldValue, newValue) ->{
+        password.textProperty().addListener((arg0, oldValue, newValue) -> {
             boolean btnDisabled = userName.getText().trim().isEmpty() || password.getText().trim().isEmpty();
             btnLogin.setDisable(btnDisabled);
         });

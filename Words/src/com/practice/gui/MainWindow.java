@@ -24,8 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class MainWindow
-{
+public class MainWindow {
     private final int PREFERRED_WIDTH = 1024;
     private final int PREFERRED_HEIGHT = 768;
     private StackPane mStackPanel;
@@ -56,19 +55,19 @@ public class MainWindow
         mBtnDelete.setDisable(0 == mSelectedItemCount);
     };
 
-    private void addListenerToDataSource(List<DBController.WordItem> dataSource){
-        for (DBController.WordItem item : dataSource){
+    private void addListenerToDataSource(List<DBController.WordItem> dataSource) {
+        for (DBController.WordItem item : dataSource) {
             item.getSelected().addListener(mCheckBoxCellListener);
         }
     }
 
-    private void removeListenerFromDataSource(List<DBController.WordItem> dataSource){
-        for (DBController.WordItem item :dataSource) {
+    private void removeListenerFromDataSource(List<DBController.WordItem> dataSource) {
+        for (DBController.WordItem item : dataSource) {
             item.getSelected().removeListener(mCheckBoxCellListener);
         }
     }
 
-    private MainWindow(Stage primaryStage){
+    private MainWindow(Stage primaryStage) {
         final double rem = new Text("").getLayoutBounds().getHeight();
         mPI = new ProgressIndicator();
         mPI.setVisible(false);
@@ -89,7 +88,7 @@ public class MainWindow
         return;
     }
 
-    private void initInputPanel(double rem){
+    private void initInputPanel(double rem) {
         mInputPanel = new BorderPane();
 
         mInputTitle = new TextField();
@@ -99,21 +98,21 @@ public class MainWindow
         titleBar.getChildren().add(new Label("Title"));
         titleBar.getChildren().add(mInputTitle);
         titleBar.setPadding(new Insets(rem * 0.8));
-        HBox.setHgrow(mInputTitle, Priority.ALWAYS );
+        HBox.setHgrow(mInputTitle, Priority.ALWAYS);
 
         mInputContent = new TextArea();
-        mInputContent.setPadding(new Insets( rem * 0.8));
+        mInputContent.setPadding(new Insets(rem * 0.8));
         mInputContent.wrapTextProperty().set(true);
 
         Button btnSubmit = new Button("Submit");
         btnSubmit.setDefaultButton(true);
         btnSubmit.setDisable(true);
 
-        btnSubmit.setOnAction(event ->{
+        btnSubmit.setOnAction(event -> {
             showProgressIndicator();
-            new Thread(()->{
-                DBController.getInstance().submit(mInputTitle.getText(),mInputContent.getText(),(() ->{
-                    Platform.runLater(()->{
+            new Thread(() -> {
+                DBController.getInstance().submit(mInputTitle.getText(), mInputContent.getText(), (() -> {
+                    Platform.runLater(() -> {
                         mInputPanel.setVisible(false);
                         mInputTitle.setText("");
                         mInputContent.setText("");
@@ -129,7 +128,7 @@ public class MainWindow
 
         Button btnSkip = new Button("Skip");
 
-        btnSkip.setOnAction(event ->{
+        btnSkip.setOnAction(event -> {
             mInputPanel.setVisible(false);
             mInputTitle.setText("");
             mInputContent.setText("");
@@ -139,8 +138,8 @@ public class MainWindow
             mRadioAll.requestFocus();
         });
 
-        mInputContent.textProperty().addListener((arg0, oldValue, newValue) ->{
-            btnSubmit.setDisable( mInputContent.getText().trim().isEmpty() );
+        mInputContent.textProperty().addListener((arg0, oldValue, newValue) -> {
+            btnSubmit.setDisable(mInputContent.getText().trim().isEmpty());
         });
 
         HBox InputPanelBottomBar = new HBox(200.0);
@@ -155,7 +154,7 @@ public class MainWindow
         mInputPanel.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
     }
 
-    private void initDBViewPanel(double rem){
+    private void initDBViewPanel(double rem) {
         mDBViewPanel = new BorderPane();
 
         mDBViewPanel.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
@@ -195,20 +194,18 @@ public class MainWindow
             mInputPanel.setVisible(true);
         });
 
-        aRadioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
-        {
+        aRadioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
             @Override
-            public void changed(ObservableValue<? extends Toggle> observableValue, Toggle toggle, Toggle t1)
-            {
+            public void changed(ObservableValue<? extends Toggle> observableValue, Toggle toggle, Toggle t1) {
                 Object selectedToggle = aRadioGroup.getSelectedToggle();
                 if (selectedToggle == mRadioRecent) {
                     showProgressIndicator();
                     mBtnDelete.setDisable(true);
-                    new Thread(()->{
-                        DBController.getInstance().queryRecent(listOfWords ->{
+                    new Thread(() -> {
+                        DBController.getInstance().queryRecent(listOfWords -> {
                             removeListenerFromDataSource(dataSource);
                             addListenerToDataSource(listOfWords);
-                            Platform.runLater(()->{
+                            Platform.runLater(() -> {
                                 dataSource.clear();
                                 dataSource.addAll(listOfWords);
                                 hideProgressIndicator();
@@ -218,11 +215,11 @@ public class MainWindow
                 } else if (selectedToggle == mRadioAll) {
                     showProgressIndicator();
                     mBtnDelete.setDisable(true);
-                    new Thread(()->{
-                        DBController.getInstance().queryAll(listOfWords ->{
+                    new Thread(() -> {
+                        DBController.getInstance().queryAll(listOfWords -> {
                             removeListenerFromDataSource(dataSource);
                             addListenerToDataSource(listOfWords);
-                            Platform.runLater(()->{
+                            Platform.runLater(() -> {
                                 dataSource.clear();
                                 dataSource.addAll(listOfWords);
                                 hideProgressIndicator();
@@ -247,16 +244,16 @@ public class MainWindow
             DBPanelBottomBar.setDisable(true);
             mDBTableView.setEditable(false);
             final boolean isRecentSelected = mRadioRecent.isSelected();
-            new Thread(()->{
+            new Thread(() -> {
                 HashSet<String> aSet = new HashSet<>();
-                for (DBController.WordItem item : dataSource){
-                    if (item.getSelected().get()){
-                        aSet.add( item.getWord() );
+                for (DBController.WordItem item : dataSource) {
+                    if (item.getSelected().get()) {
+                        aSet.add(item.getWord());
                     }
                 }
                 DBController aDB = DBController.getInstance();
                 if (isRecentSelected) {
-                    aDB.deleteRecentWords(aSet, ()->{
+                    aDB.deleteRecentWords(aSet, () -> {
                         aDB.queryRecent(listOfWords ->
                         {
                             removeListenerFromDataSource(dataSource);
@@ -272,9 +269,8 @@ public class MainWindow
 
                         });
                     });
-                }
-                else {
-                    aDB.deleteWords(aSet, ()->{
+                } else {
+                    aDB.deleteWords(aSet, () -> {
                         aDB.queryAll(listOfWords ->
                         {
                             removeListenerFromDataSource(dataSource);
@@ -297,15 +293,15 @@ public class MainWindow
         mDBViewPanel.setVisible(false);
     }
 
-    private void showProgressIndicator(){
+    private void showProgressIndicator() {
         mPI.setVisible(true);
     }
 
-    private void hideProgressIndicator(){
+    private void hideProgressIndicator() {
         mPI.setVisible(false);
     }
 
-    public static MainWindow create(Stage primaryStage){
+    public static MainWindow create(Stage primaryStage) {
         return new MainWindow(primaryStage);
     }
 }

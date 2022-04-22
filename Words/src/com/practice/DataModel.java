@@ -11,32 +11,32 @@ public class DataModel {
 
     static class DBConnection {
 
-        public static Connection createConnection(String url, String databaseName, String userName, String password){
+        public static Connection createConnection(String url, String databaseName, String userName, String password) {
             String fullUrl = String.format("%s/%s", url, databaseName);
             //fullUrl = "jdbc:mysql://localhost:3306/Users"
             Connection conn = null;
-            try{
+            try {
                 conn = DriverManager.getConnection(fullUrl, userName, password);
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 createDatabase(url, databaseName, userName, password);
-                try{
+                try {
                     conn = DriverManager.getConnection(fullUrl, userName, password);
-                }catch (SQLException ex){
+                } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
             return conn;
         }
 
-        private static void createDatabase(String url, String databaseName, String userName, String password){
+        private static void createDatabase(String url, String databaseName, String userName, String password) {
             String sql = String.format("CREATE DATABASE IF NOT EXISTS %s", databaseName);
 
-            try{
+            try {
                 Connection conn = DriverManager.getConnection(url, userName, password);
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.execute();
                 conn.close();
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -50,23 +50,22 @@ public class DataModel {
     private static boolean sUserInitOK = false;
     private static boolean sProjectInitOK = false;
 
-    public static DataModel getInstance(){
-        if (null == sDataModel){
+    public static DataModel getInstance() {
+        if (null == sDataModel) {
             sDataModel = new DataModel();
         }
 
         return sDataModel;
     }
 
-    public static void releaseInstance(){
-        if (null != sDataModel){
+    public static void releaseInstance() {
+        if (null != sDataModel) {
             sDataModel.release();
             sDataModel = null;
         }
     }
 
-    private DataModel()
-    {
+    private DataModel() {
         mUsersConnection = DBConnection.createConnection(DBConfig.DATABASE_URL,
                 "Users",
                 DBConfig.DATABASE_USERNAME,
@@ -76,8 +75,8 @@ public class DataModel {
     }
 
 
-    private boolean initUsersTable(){
-        try{
+    private boolean initUsersTable() {
+        try {
             String sql = "CREATE TABLE IF NOT EXISTS Version (version INT PRIMARY KEY)";
             Statement stmt = mUsersConnection.createStatement();
             stmt.execute(sql);
@@ -87,13 +86,13 @@ public class DataModel {
             stat.execute(sql_user);
 
             int aVersion = getUsersTableVersion();
-            if (0 == aVersion){
+            if (0 == aVersion) {
                 setUsersTableVersion();
             }
 
             return true;
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -101,18 +100,18 @@ public class DataModel {
     }
 
 
-    public int getUsersTableVersion(){
-        try{
+    public int getUsersTableVersion() {
+        try {
             String sql = "SELECT version FROM Version";
             Statement stmt = mUsersConnection.createStatement();
-            if (stmt.execute(sql)){
+            if (stmt.execute(sql)) {
                 ResultSet rs = stmt.getResultSet();
-                if (rs.next()){
+                if (rs.next()) {
                     return rs.getInt(1);
                 }
                 rs.close();
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -120,19 +119,19 @@ public class DataModel {
     }
 
 
-    private void setUsersTableVersion(){
-        try{
+    private void setUsersTableVersion() {
+        try {
             String sql = String.format("INSERT INTO Version(version) VALUES(%d)", VERSION_USERS);
             Statement stmt = mUsersConnection.createStatement();
             stmt.execute(sql);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
 
-    private boolean initProjectTable(){
-        try{
+    private boolean initProjectTable() {
+        try {
             String sql_version = "CREATE TABLE IF NOT EXISTS Version (version INT PRIMARY KEY)";
             Statement stmt = mProjectConnection.createStatement();
             stmt.execute(sql_version);
@@ -149,13 +148,13 @@ public class DataModel {
 
 
             int aVersion = getProjectTableVersion();
-            if (0 == aVersion){
+            if (0 == aVersion) {
                 setProjectTableVersion();
             }
 
             return true;
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -163,18 +162,18 @@ public class DataModel {
     }
 
 
-    public int getProjectTableVersion(){
-        try{
+    public int getProjectTableVersion() {
+        try {
             String sql = "SELECT version FROM Version";
             Statement stmt = mProjectConnection.createStatement();
-            if (stmt.execute(sql)){
+            if (stmt.execute(sql)) {
                 ResultSet rs = stmt.getResultSet();
-                if (rs.next()){
+                if (rs.next()) {
                     return rs.getInt(1);
                 }
                 rs.close();
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -182,112 +181,112 @@ public class DataModel {
     }
 
 
-    private void setProjectTableVersion(){
-        try{
+    private void setProjectTableVersion() {
+        try {
             String sql = String.format("INSERT INTO Version(version) VALUES(%d)", VERSION_USERS);
             Statement stmt = mProjectConnection.createStatement();
             stmt.execute(sql);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
 
-    public void insertWord(String word, int values){
-        try{
+    public void insertWord(String word, int values) {
+        try {
             int count = checkFrequency(word);
             Statement stat = mProjectConnection.createStatement();
-            if(0 == count) {
+            if (0 == count) {
                 String insert = String.format("INSERT INTO Words(word) VALUES('%s')", word);
                 stat.execute(insert);
             }
             String setFrequency = String.format("UPDATE Words SET frequency = '%d' WHERE word='%s'", values, word);
             stat.execute(setFrequency);
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public ArrayList<DBController.WordItem> getWords(){
+    public ArrayList<DBController.WordItem> getWords() {
         ArrayList<DBController.WordItem> aResult = new ArrayList<>();
-        try{
+        try {
             String getaWord = String.format("SELECT word,frequency FROM Words ORDER BY frequency DESC");
             Statement stat = mProjectConnection.createStatement();
-            if(stat.execute(getaWord)){
+            if (stat.execute(getaWord)) {
                 ResultSet re = stat.getResultSet();
-                while (re.next()){
+                while (re.next()) {
                     String aWord = re.getString(1);
                     int aFre = re.getInt(2);
-                   aResult.add(new DBController.WordItem(aWord, aFre));
+                    aResult.add(new DBController.WordItem(aWord, aFre));
                 }
                 re.close();
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return aResult;
     }
 
-    public int checkFrequency(String word){
-        try{
-            String checkFre = String.format("SELECT frequency FROM Words WHERE word = '%s'",word);
+    public int checkFrequency(String word) {
+        try {
+            String checkFre = String.format("SELECT frequency FROM Words WHERE word = '%s'", word);
             Statement stat = mProjectConnection.createStatement();
-            if(stat.execute(checkFre)){
+            if (stat.execute(checkFre)) {
                 ResultSet re = stat.getResultSet();
-                if(re.next()){
+                if (re.next()) {
                     int count = re.getInt(1);
 
                     return count;
                 }
             }
 
-        }catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return 0;
     }
 
-    public void deleteWord(String word){
-        try{
-            if(0 == checkFrequency(word)){
+    public void deleteWord(String word) {
+        try {
+            if (0 == checkFrequency(word)) {
                 return;
             }
-            String deleteWord = String.format("DELETE FROM Words WHERE word = '%s'",word);
+            String deleteWord = String.format("DELETE FROM Words WHERE word = '%s'", word);
             Statement stat = mProjectConnection.createStatement();
             stat.execute(deleteWord);
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean checkDuplicates(String userHashCode){
-        try{
-            String checkDup = String.format("SELECT COUNT(user_hash) FROM Users WHERE user_hash = '%s'",userHashCode);
+    private boolean checkDuplicates(String userHashCode) {
+        try {
+            String checkDup = String.format("SELECT COUNT(user_hash) FROM Users WHERE user_hash = '%s'", userHashCode);
             Statement stat = mUsersConnection.createStatement();
-            if(stat.execute(checkDup)){
+            if (stat.execute(checkDup)) {
                 ResultSet re = stat.getResultSet();
-                if(re.next()){
+                if (re.next()) {
                     int count = re.getInt(1);
                     return 0 != count;
                 }
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return false;
     }
 
-    public String signUp(String userHashCode){
+    public String signUp(String userHashCode) {
 
         boolean check = checkDuplicates(userHashCode);
-        if(check){
+        if (check) {
             return null;      //user already exists
         }
         try {
@@ -305,26 +304,26 @@ public class DataModel {
 
             return newDBName;
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public String logIn(String userHashCode){
+    public String logIn(String userHashCode) {
 
         boolean check = checkDuplicates(userHashCode);
-        if(check) {
+        if (check) {
             try {
                 String sql = String.format("SELECT db_path FROM Users WHERE user_hash = '%s'", userHashCode);
                 Statement stat = mUsersConnection.createStatement();
                 if (stat.execute(sql)) {
                     ResultSet rs = stat.getResultSet();
-                   if (rs.next()) {
+                    if (rs.next()) {
                         String pro = rs.getString(1);
 
-                        if(null != mProjectConnection){
+                        if (null != mProjectConnection) {
                             mProjectConnection.close();
                         }
                         mProjectConnection = DBConnection.createConnection(DBConfig.DATABASE_URL,
@@ -340,14 +339,14 @@ public class DataModel {
                 e.printStackTrace();
             }
         }
-            return null;
+        return null;
     }
 
-    private void release(){
-        if (null != mUsersConnection){
+    private void release() {
+        if (null != mUsersConnection) {
             try {
                 mUsersConnection.close();
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
                 mUsersConnection = null;

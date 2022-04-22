@@ -19,92 +19,104 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class DBController
-{
+public class DBController {
     static private DBController sController = null;
 
     static final private String SALT = "4117EAF8-444D-4517-88E5-8C815D58E6B7";
 
     private final ArrayList<WordItem> mRecentInsertWords = new ArrayList<>();
 
-    public static class WordItem{
+    public static class WordItem {
         private String word;
         private int frequency;
         private SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
 
-        public String getWord() { return word; }
-        public void setWord(String value) { word = value; }
+        public String getWord() {
+            return word;
+        }
 
-        public int getFrequency(){ return frequency; }
-        public void setFrequency(int value){ frequency = value;}
+        public void setWord(String value) {
+            word = value;
+        }
 
-        public ObservableBooleanValue getSelected(){ return selected; }
-        public void setSelected(Boolean value){ selected.set(value);}
+        public int getFrequency() {
+            return frequency;
+        }
 
-        public WordItem(String _word, int _frequency){
+        public void setFrequency(int value) {
+            frequency = value;
+        }
+
+        public ObservableBooleanValue getSelected() {
+            return selected;
+        }
+
+        public void setSelected(Boolean value) {
+            selected.set(value);
+        }
+
+        public WordItem(String _word, int _frequency) {
             setWord(_word);
             setFrequency(_frequency);
         }
-    };
+    }
 
-    private DBController(){
+    ;
+
+    private DBController() {
         DataModel aDataModel = DataModel.getInstance();
         // Connect to Users database
     }
 
-    private String makeHash(String userName, String password){
+    private String makeHash(String userName, String password) {
         String source = userName + password + SALT;
         byte[] buffer = source.getBytes(StandardCharsets.UTF_8);
-        try
-        {
+        try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hashedCode = md.digest(buffer);
             return String.format("%032x", new BigInteger(1, hashedCode));
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public boolean login(String userName, String password){
+    public boolean login(String userName, String password) {
         try {
             String hashCode = makeHash(userName, password);
 
             DataModel aDataModel = DataModel.getInstance();
             String check = aDataModel.logIn(hashCode);
-            if(null == check)
-            {
+            if (null == check) {
                 return false;
             }
             return true;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public boolean signup(String userName, String password){
+    public boolean signup(String userName, String password) {
         try {
             String hashCode = makeHash(userName, password);
 
             DataModel aDataModel = DataModel.getInstance();
             String check = aDataModel.signUp(hashCode);
-            if(null == check)
-            {
+            if (null == check) {
                 return false;
             }
             return true;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public boolean submit(String title, String content, Runnable callback){
-	try {
+    public boolean submit(String title, String content, Runnable callback) {
+        try {
             //String lowerTitle = title.toLowerCase();
             //String reLtitle = lowerTitle.replaceAll("(?!_-)\\p{Punct}", " ");
 
@@ -116,31 +128,30 @@ public class DBController
             DataModel aData = DataModel.getInstance();
 
             //insert aWords into wordsMap
-            HashMap<String,Integer> wordsMap = new HashMap<>();
+            HashMap<String, Integer> wordsMap = new HashMap<>();
 
             for (String aWord : aWords) {
-                if (aWord.isBlank()){
+                if (aWord.isBlank()) {
                     continue;
                 }
 
-                if(wordsMap.containsKey(aWord)){
+                if (wordsMap.containsKey(aWord)) {
                     int frequency = wordsMap.get(aWord);
                     wordsMap.put(aWord, frequency + 1);
-                }
-                else {
+                } else {
                     wordsMap.put(aWord, 1);
                 }
             }
 
-            for (String w :wordsMap.keySet()) {
+            for (String w : wordsMap.keySet()) {
                 int fre = wordsMap.get(w);
-                aData.insertWord(w,fre);
+                aData.insertWord(w, fre);
             }
 
             // update UI
             mRecentInsertWords.clear();
             for (Map.Entry<String, Integer> anItem : wordsMap.entrySet()) {
-                mRecentInsertWords.add( new WordItem(anItem.getKey(), anItem.getValue()));
+                mRecentInsertWords.add(new WordItem(anItem.getKey(), anItem.getValue()));
             }
 
             mRecentInsertWords.sort((o1, o2) -> Integer.compare(o2.getFrequency(), o1.getFrequency()));
@@ -148,14 +159,14 @@ public class DBController
             callback.run();
             return true;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
 
 
-    public void queryAll(Consumer<List<WordItem>> callback){
+    public void queryAll(Consumer<List<WordItem>> callback) {
         // query all records here:
 
         DataModel aData = DataModel.getInstance();
@@ -164,37 +175,38 @@ public class DBController
         callback.accept(aResult);
     }
 
-    public void queryRecent(Consumer<List<WordItem>> callback){
+    public void queryRecent(Consumer<List<WordItem>> callback) {
         ArrayList<WordItem> aCopy = new ArrayList<>();
         for (WordItem item : mRecentInsertWords) {
-            aCopy.add( new WordItem(item.getWord(), item.getFrequency()));
+            aCopy.add(new WordItem(item.getWord(), item.getFrequency()));
         }
         callback.accept(aCopy);
     }
 
-    public void deleteWords(Set<String> words, Runnable onCompleted){
+    public void deleteWords(Set<String> words, Runnable onCompleted) {
         DataModel aData = DataModel.getInstance();
-        for(String w:words) {
+        for (String w : words) {
             aData.deleteWord(w);
         }
         onCompleted.run();
     }
 
-    public void deleteRecentWords(Set<String> words, Runnable onCompleted){
-        deleteWords(words, ()->{
-            for (String s:words) {
+    public void deleteRecentWords(Set<String> words, Runnable onCompleted) {
+        deleteWords(words, () -> {
+            for (String s : words) {
                 // update local cache
-                mRecentInsertWords.removeIf(item-> item.getWord().equals(s));
+                mRecentInsertWords.removeIf(item -> item.getWord().equals(s));
             }
             onCompleted.run();
         });
     }
-    private void close(){
+
+    private void close() {
         // disconnect from databases
         DataModel.releaseInstance();
     }
 
-    static public DBController getInstance(){
+    static public DBController getInstance() {
         if (null == sController) {
             sController = new DBController();
         }
@@ -202,8 +214,8 @@ public class DBController
         return sController;
     }
 
-    static public void release(){
-        if (null != sController){
+    static public void release() {
+        if (null != sController) {
             sController.close();
             sController = null;
         }

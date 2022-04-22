@@ -1,8 +1,7 @@
 package com.practice.gui;
 
-public final class WindowStates
-{
-    public enum State{
+public final class WindowStates {
+    public enum State {
         STATE_LOGIN,
         STATE_SIGNUP,
         STATE_WORKING,
