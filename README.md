@@ -11,3 +11,5 @@ Path: CTrainCamp/Java/Prototype/Words
 4. Open CTrainCamp/Java/Prototype/Words with Intellij IDEA, waiting for the sync done.
 5. Run/Edit Configurations..., add a new application configuration 'Words'
 6. Set the start class to com.practice.Main
+
+![Configuration](https://user-images.githubusercontent.com/2918453/164911691-a2923637-8969-4d19-a66c-623b940579f1.jpg)
